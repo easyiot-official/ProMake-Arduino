@@ -1,0 +1,179 @@
+#ifndef __ProMake_M66__
+#define __ProMake_M66__
+
+#include <HardwareSerial.h>
+#include "ProMake_CircularBuffer.h"
+#include "ProMake_GSM_ProviderBase.h"
+#include "ProMake_M66_AccessProvider.h"
+
+enum ProMake_GSM_CommandError_t
+{
+    CMD_ONGOING,
+    CMD_OK,
+    CMD_ERROR,
+    CMD_UNEXP,
+    CMD_OK_NO_DATA
+};
+
+#define UMPROVIDERS 3
+
+class ProMake_M66_Modem : public ProMake_CircularBufferManager
+{
+private:
+    ProMake_CircularBuffer cb;
+    HardwareSerial &m_serial;
+
+    // Phone number, used when calling, sending SMS and reading calling numbers
+    // Also PIN in modem configuration
+    // Also APN
+    // Also remote server
+    char *_param;
+
+    // 0 = ongoing
+    // 1 = OK
+    // 2 = Error. Incorrect state
+    // 3 = Unexpected modem message
+    // 4 = OK but not available data.
+    ProMake_GSM_CommandError_t _commandError;
+
+    // Counts the steps by the command
+    uint8_t _commandCounter;
+
+    // Presently ongoing command
+    ProMake_GSM_commandType_e _ongoingCommand;
+
+    // This is the modem (known) status
+    ProMake_GSM_NetworkStatus_t _status;
+
+    ProMakeGsmProviderBase *_UMProvider[UMPROVIDERS];
+    ProMakeGsmProviderBase *_activeProvider;
+
+    unsigned long _milliseconds;
+public:
+    /** Constructor **/
+    ProMake_M66_Modem(HardwareSerial &serial, bool debug = false);
+
+    /** Get phone number
+        @return phone number
+     */
+    char *getParam() { return _param; };
+
+    /** Establish a new phone number
+        @param n			Phone number
+     */
+    void setParam(char *n) { _param = n; };
+
+    /** Get command error
+        @return command error
+     */
+    ProMake_GSM_CommandError_t getCommandError() { return _commandError; };
+
+    /** Establish a command error
+        @param n			Command error
+     */
+    void setCommandError(ProMake_GSM_CommandError_t n) { _commandError = n; };
+
+    /** Get command counter
+        @return command counter
+     */
+    uint8_t getCommandCounter() { return _commandCounter; };
+
+    /** Set command counter
+        @param c			Initial value
+     */
+    void setCommandCounter(uint8_t c) { _commandCounter = c; };
+
+    /** Get ongoing command
+        @return command
+     */
+    ProMake_GSM_commandType_e getOngoingCommand() { return _ongoingCommand; };
+
+    /** Set ongoing command
+        @param c			 New ongoing command
+     */
+    void setOngoingCommand(ProMake_GSM_commandType_e c) { _ongoingCommand = c; };
+
+    /** Open command
+      @param activeProvider Active provider
+      @param c        Command for open
+     */
+    void openCommand(ProMakeGsmProviderBase *activeProvider, ProMake_GSM_commandType_e c);
+
+    /** Close command
+      @param code     Close code
+     */
+    void closeCommand(ProMake_GSM_CommandError_t code);
+
+    /** Generic response parser
+        @param rsp			Returns true if expected response exists
+        @param string		Substring expected in response
+        @param string2		Second substring expected in response
+        @return true if parsed correctly
+     */
+    bool genericParse_rsp(bool &rsp, const char *string = 0, const char *string2 = 0);
+
+    /** Generates a generic AT command request from a simple char buffer
+        @param str			Buffer with AT command
+        @param addCR		Carriadge return adding automatically
+     */
+    void genericCommand_rqc(const char *str, bool addCR = true);
+
+    /** Establish a new network status
+        @param status		Network status
+     */
+    inline void setStatus(ProMake_GSM_NetworkStatus_t status) { _status = status; };
+
+    /** Returns actual network status
+        @return network status
+     */
+    inline ProMake_GSM_NetworkStatus_t getStatus() { return _status; };
+
+    /** Register provider as willing to receive unsolicited messages
+        @param provider	Pointer to provider able to receive unsolicited messages
+    */
+    void registerUMProvider(ProMakeGsmProviderBase *provider);
+
+    /** unegister provider as willing to receive unsolicited messages
+        @param provider	Pointer to provider able to receive unsolicited messages
+    */
+    void unRegisterUMProvider(ProMakeGsmProviderBase *provider);
+
+    /** Register a provider as "dialoguing" talking in facto with the modem
+        @param provider	Pointer to provider receiving responses
+    */
+    void registerActiveProvider(ProMakeGsmProviderBase *provider) { _activeProvider = provider; };
+
+
+    /** Chronometer. Measure milliseconds from last call
+      @return milliseconds from las time function was called
+    */    
+    unsigned long takeMilliseconds();
+    
+    void recv();
+
+private:
+    void parseResp();
+    void spaceAvailable(){};
+
+    /** Generic response parser
+      @param rsp      Returns true if expected response exists
+      @param string   Substring expected in response
+      @param string2    Second substring expected in response
+      @return true if parsed correctly
+     */
+    // bool recognizeUnsolicitedEvent(byte oldTail);
+
+public:
+    int getICCID(char *iccid);
+
+private:
+    /** Continue to modem configuration function
+     */
+    void ModemConfigurationContinue();
+
+    /** Continue to getICCID function
+     */
+    void getICCIDContinue();
+};
+
+#endif
