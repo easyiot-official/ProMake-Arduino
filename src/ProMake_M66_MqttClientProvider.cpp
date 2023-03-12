@@ -14,8 +14,9 @@ void ProMakeM66MqttClientProvider::setCallback(void (*callback)(char *, char *))
 }
 
 // Connect MQTT main function.
-int ProMakeM66MqttClientProvider::connectMqttClient(const char *server, int port, const char *willTopic, const char *willPayload, int willQoS, int willRetain, int keepAliveTime, bool synchronous)
+int ProMakeM66MqttClientProvider::connectMqttClient(const char *clientId, const char *server, int port, const char *willTopic, const char *willPayload, int willQoS, int willRetain, int keepAliveTime, bool synchronous)
 {
+    _clientId = clientId;
     _remotePort = port;
     _remoteServer = server;
     _willTopic = willTopic;
@@ -161,7 +162,11 @@ void ProMakeM66MqttClientProvider::connectMQTTClientContinue()
             // Response received
             if (resp)
             {
-                _theProMakeM66Modem->genericCommand_rqc("AT+QMTCONN=0,\"client\"", true);
+                _theProMakeM66Modem->genericCommand_rqc("AT+QMTCONN=0,\"", false);
+                _theProMakeM66Modem->print(_clientId);
+                _theProMakeM66Modem->print('"');
+                _theProMakeM66Modem->print('\r');
+
                 _theProMakeM66Modem->setCommandCounter(9);
                 _theProMakeM66Modem->takeMilliseconds();
             }
@@ -284,7 +289,7 @@ void ProMakeM66MqttClientProvider::publishContinue()
     switch (_theProMakeM66Modem->getCommandCounter())
     {
     case 1:
-        _theProMakeM66Modem->genericCommand_rqc("AT+QMTPUB=0,0,");
+        _theProMakeM66Modem->genericCommand_rqc("AT+QMTPUB=0,0,", false);
         _theProMakeM66Modem->print(_pubQos);
         _theProMakeM66Modem->print(',');
         _theProMakeM66Modem->print(_pubRetain);
@@ -293,11 +298,31 @@ void ProMakeM66MqttClientProvider::publishContinue()
         _theProMakeM66Modem->print(_pubTopic);
         _theProMakeM66Modem->print('"');
         _theProMakeM66Modem->print('\r');
-        _theProMakeM66Modem->print(_pubPayload);
-        _theProMakeM66Modem->print((char)0x1A);
         _theProMakeM66Modem->setCommandCounter(2);
+        _theProMakeM66Modem->takeMilliseconds();
         break;
     case 2:
+        if (_theProMakeM66Modem->genericParse_rsp(resp, ">"))
+        {
+            // Response received
+            if (resp)
+            {
+                _theProMakeM66Modem->print(_pubPayload);
+                _theProMakeM66Modem->write(26);
+                _theProMakeM66Modem->print('\r');
+                _theProMakeM66Modem->setCommandCounter(3);
+                _theProMakeM66Modem->takeMilliseconds();
+            }
+            else
+            {
+                if (_theProMakeM66Modem->takeMilliseconds() > __TOUTMQTT__)
+                {
+                    _theProMakeM66Modem->closeCommand(CMD_UNEXP);
+                }
+            }
+        }
+        break;
+    case 3:
         if (_theProMakeM66Modem->genericParse_rsp(resp, "+QMTPUB: 0,0"))
         {
             // Response received
@@ -345,7 +370,7 @@ void ProMakeM66MqttClientProvider::subscribeContinue()
     switch (_theProMakeM66Modem->getCommandCounter())
     {
     case 1:
-        _theProMakeM66Modem->genericCommand_rqc("AT+QMTSUB=0,0,");
+        _theProMakeM66Modem->genericCommand_rqc("AT+QMTSUB=0,1,", false);
         _theProMakeM66Modem->print('"');
         _theProMakeM66Modem->print(_subTopic);
         _theProMakeM66Modem->print('"');
@@ -353,9 +378,10 @@ void ProMakeM66MqttClientProvider::subscribeContinue()
         _theProMakeM66Modem->print(_subQos);
         _theProMakeM66Modem->print('\r');
         _theProMakeM66Modem->setCommandCounter(2);
+        _theProMakeM66Modem->takeMilliseconds();
         break;
     case 2:
-        if (_theProMakeM66Modem->genericParse_rsp(resp, "+QMTSUB: 0,0,0"))
+        if (_theProMakeM66Modem->genericParse_rsp(resp, "+QMTSUB: 0,1,0"))
         {
             // Response received
             if (resp)

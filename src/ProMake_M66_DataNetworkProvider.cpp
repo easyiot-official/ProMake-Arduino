@@ -308,8 +308,7 @@ void ProMakeM66DataNetworkProvider::getICCIDContinue()
 	switch (_theProMakeM66Modem->getCommandCounter()) {
     case 1:
 		_theProMakeM66Modem->setCommandCounter(2);
-		_theProMakeM66Modem->genericCommand_rqc("AT+QCCID", false);
-		_theProMakeM66Modem->print("\r");
+		_theProMakeM66Modem->genericCommand_rqc("AT+QCCID");
 		break;
 	case 2:
 		if (_theProMakeM66Modem->genericParse_rsp(resp))
@@ -322,13 +321,68 @@ void ProMakeM66DataNetworkProvider::getICCIDContinue()
 	}
 }
 
+
+int ProMakeM66DataNetworkProvider::getIMEI(char *imei)
+{
+	bufferIMEI=imei;
+	_theProMakeM66Modem->openCommand(this,GETIMEI);
+	getIMEIContinue();
+	
+	unsigned long timeOut = millis();
+	while(((millis() - timeOut) < 5000) & (ready() == 0));
+		
+	return _theProMakeM66Modem->getCommandError();
+}
+
+void ProMakeM66DataNetworkProvider::getIMEIContinue()
+{
+	bool resp;
+	
+	switch (_theProMakeM66Modem->getCommandCounter()) {
+    case 1:
+		_theProMakeM66Modem->setCommandCounter(2);
+		_theProMakeM66Modem->genericCommand_rqc("AT+GSN");
+		break;
+	case 2:
+		if (_theProMakeM66Modem->genericParse_rsp(resp))
+		{
+			parseGSN_available(resp);
+			_theProMakeM66Modem->closeCommand(CMD_OK);
+		}
+		else _theProMakeM66Modem->closeCommand(CMD_ERROR);
+		break;
+	}
+}
+
+bool ProMakeM66DataNetworkProvider::parseGSN_available(bool& rsp)
+{
+	char c;
+	bool imeiFound = false;
+	int i = 0;
+	
+	while(((c = _theProMakeM66Modem->theBuffer().read()) != 0) & (i < 15))
+	{
+		if((c < 58) & (c > 47))
+			imeiFound = true;
+		
+		if(imeiFound)
+		{
+			bufferIMEI[i] = c;
+			i++;
+		}
+	}
+	bufferIMEI[i]=0;
+	
+	return true;
+}
+
 bool ProMakeM66DataNetworkProvider::parseQCCID_available(bool& rsp)
 {
 	char c;
 	bool iccidFound = false;
 	int i = 0;
 	
-	while(((c = _theProMakeM66Modem->theBuffer().read()) != 0) & (i < 19))
+	while(((c = _theProMakeM66Modem->theBuffer().read()) != 0) & (i < 20))
 	{
 		if((c < 58) & (c > 47))
 			iccidFound = true;
@@ -394,6 +448,9 @@ void ProMakeM66DataNetworkProvider::manageResponse(byte from, byte to)
 			break;
         case GETICCID:
 			getICCIDContinue();
+            break;
+        case GETIMEI:
+			getIMEIContinue();
             break;
         /*
 		case GETIP:

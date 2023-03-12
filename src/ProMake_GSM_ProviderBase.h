@@ -38,7 +38,8 @@ enum ProMake_GSM_commandType_e
     GETIP,
     GETCONNECTSTATUS,
     GETLOCATION,
-    GETICCID
+    GETICCID,
+    GETIMEI
 };
 class ProMake_M66_Modem;
 

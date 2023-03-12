@@ -6,12 +6,12 @@
 
 #include <IPAddress.h>
 
-#define MQTT_CALLBACK_SIGNATURE void (*callback)(char*,char*)
-
+#define MQTT_CALLBACK_SIGNATURE void (*callback)(char *, char *)
 
 class ProMakeM66MqttClientProvider : public ProMakeGsmProviderBase
 {
 private:
+    const char *_clientId;
     int _remotePort; // Current operation remote port.
     const char *_remoteServer;
     int _keepAliveTime;
@@ -55,7 +55,7 @@ public:
         @param id_socket	Local socket number
         @return 0 if command running, 1 if success, otherwise error
      */
-    int connectMqttClient(const char *server, int port, const char *willTopic, const char *willPayload, int willQoS, int willRetain, int keepAliveTime, bool synchronous = true);
+    int connectMqttClient(const char *clientId, const char *server, int port, const char *willTopic, const char *willPayload, int willQoS, int willRetain, int keepAliveTime, bool synchronous = true);
 
     /** Close a socket
     @param client1Server0	1 if modem acts as client, 0 if acts as server

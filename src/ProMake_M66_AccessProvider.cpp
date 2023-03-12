@@ -27,7 +27,7 @@ ProMake_GSM_NetworkStatus_t ProMakeM66AccessProvider::begin(int8_t pwrPin, char 
 
   _theProMakeM66Modem->setStatus(IDLE);
   Serial.println("Powered ON");
- 
+
   //
   _pin = pin;
   _theProMakeM66Modem->openCommand(this, MODEMCONFIG);
@@ -64,8 +64,9 @@ void ProMakeM66AccessProvider::ModemConfigurationContinue()
   int ct = _theProMakeM66Modem->getCommandCounter();
   if (ct == 1)
   {
-    _theProMakeM66Modem->setCommandCounter(2);
     _theProMakeM66Modem->genericCommand_rqc("AT");
+    _theProMakeM66Modem->takeMilliseconds();
+    _theProMakeM66Modem->setCommandCounter(2);
   }
   else if (ct == 2)
   {
@@ -89,14 +90,16 @@ void ProMakeM66AccessProvider::ModemConfigurationContinue()
           // Serial.println("AT+CGREG?");
           _theProMakeM66Modem->setCommandCounter(4);
           _theProMakeM66Modem->takeMilliseconds();
-          retryCnt = 5;
+          retryCnt = 10;
           _theProMakeM66Modem->genericCommand_rqc("AT+CGREG?");
         }
       }
       else
       {
-        Serial.println("init failed ...");
-        _theProMakeM66Modem->closeCommand(CMD_UNEXP);
+        if (_theProMakeM66Modem->takeMilliseconds() > __TOUTMODEMCONFIGURATION__)
+        {
+          _theProMakeM66Modem->closeCommand(CMD_UNEXP);
+        }
       }
     }
   }
@@ -109,7 +112,7 @@ void ProMakeM66AccessProvider::ModemConfigurationContinue()
         _theProMakeM66Modem->setCommandCounter(4);
         _theProMakeM66Modem->takeMilliseconds();
         delay(2000);
-        retryCnt = 5;
+        retryCnt = 10;
         _theProMakeM66Modem->genericCommand_rqc("AT+CGREG?");
       }
       else
@@ -161,8 +164,10 @@ void ProMakeM66AccessProvider::ModemConfigurationContinue()
         _theProMakeM66Modem->setStatus(GSM_READY);
         _theProMakeM66Modem->closeCommand(CMD_OK);
       }
-      else
+      else if (_theProMakeM66Modem->takeMilliseconds() > __TOUTMODEMCONFIGURATION__)
+      {
         _theProMakeM66Modem->closeCommand(CMD_UNEXP);
+      }
     }
   }
 }

@@ -46,6 +46,7 @@ private:
     char *cellId;
 
     char *bufferICCID;
+    char *bufferIMEI;
 
     /** Continue to getLocation function
      */
@@ -54,6 +55,12 @@ private:
     /** Continue to getICCID function
      */
     void getICCIDContinue();
+
+    /** Continue to getIMEI function
+     */
+    void getIMEIContinue();
+
+    bool parseGSN_available(bool &rsp);
 
     bool parseQENG_available(bool &rsp);
 
@@ -125,6 +132,11 @@ public:
     /** getICCID
      */
     int getICCID(char *iccid);
+
+    /** getIMEI
+     * Obtain modem IMEI
+     */
+    int getIMEI(char *imei);
 
     /** Manages modem response
         @param from 		Initial byte of buffer
