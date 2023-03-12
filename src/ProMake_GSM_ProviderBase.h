@@ -26,6 +26,10 @@ enum ProMake_GSM_commandType_e
     DETACHGPRS,
     CONNECTTCPCLIENT,
     DISCONNECTTCP,
+    CONNECTMQTTCLIENT,
+    DISCONNECTMQTT,
+    MQTTPub,
+    MQTTSub,
     BEGINWRITESOCKET,
     ENDWRITESOCKET,
     AVAILABLESOCKET,
@@ -36,10 +40,15 @@ enum ProMake_GSM_commandType_e
     GETLOCATION,
     GETICCID
 };
+class ProMake_M66_Modem;
 
 class ProMakeGsmProviderBase
 {
+protected:
+    ProMake_M66_Modem *_theProMakeM66Modem;
+
 public:
+    ProMakeGsmProviderBase(ProMake_M66_Modem *Modem);
     /** Get last command status
         @return Returns 0 if last command is still executing, 1 success, >1 error
     */
@@ -49,7 +58,7 @@ public:
         @param from 		Initial byte of buffer
         @param to 			Final byte of buffer
     */
-    virtual void manageResponse(byte from, byte to);
+    virtual void manageResponse(byte from, byte to) = 0;
 
     /** Recognize URC
         @param from

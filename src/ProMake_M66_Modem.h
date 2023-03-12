@@ -5,6 +5,7 @@
 #include "ProMake_CircularBuffer.h"
 #include "ProMake_GSM_ProviderBase.h"
 #include "ProMake_M66_AccessProvider.h"
+#include <Print.h>
 
 enum ProMake_GSM_CommandError_t
 {
@@ -17,17 +18,11 @@ enum ProMake_GSM_CommandError_t
 
 #define UMPROVIDERS 3
 
-class ProMake_M66_Modem : public ProMake_CircularBufferManager
+class ProMake_M66_Modem : public ProMake_CircularBufferManager, public Print
 {
 private:
     ProMake_CircularBuffer cb;
     HardwareSerial &m_serial;
-
-    // Phone number, used when calling, sending SMS and reading calling numbers
-    // Also PIN in modem configuration
-    // Also APN
-    // Also remote server
-    char *_param;
 
     // 0 = ongoing
     // 1 = OK
@@ -49,19 +44,10 @@ private:
     ProMakeGsmProviderBase *_activeProvider;
 
     unsigned long _milliseconds;
+
 public:
     /** Constructor **/
     ProMake_M66_Modem(HardwareSerial &serial, bool debug = false);
-
-    /** Get phone number
-        @return phone number
-     */
-    char *getParam() { return _param; };
-
-    /** Establish a new phone number
-        @param n			Phone number
-     */
-    void setParam(char *n) { _param = n; };
 
     /** Get command error
         @return command error
@@ -118,6 +104,11 @@ public:
      */
     void genericCommand_rqc(const char *str, bool addCR = true);
 
+    /** Returns the circular buffer
+        @return circular buffer
+     */
+    inline ProMake_CircularBuffer &theBuffer() { return cb; };
+
     /** Establish a new network status
         @param status		Network status
      */
@@ -143,12 +134,17 @@ public:
     */
     void registerActiveProvider(ProMakeGsmProviderBase *provider) { _activeProvider = provider; };
 
+    /** Write a character in serial
+        @param c			Character
+        @return size
+     */
+    size_t write(uint8_t c);
 
     /** Chronometer. Measure milliseconds from last call
       @return milliseconds from las time function was called
-    */    
+    */
     unsigned long takeMilliseconds();
-    
+
     void recv();
 
 private:

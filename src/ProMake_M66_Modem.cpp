@@ -116,6 +116,14 @@ void ProMake_M66_Modem::parseResp()
     _activeProvider->manageResponse(cb.getHead(), cb.getTail());
 }
 
+
+size_t ProMake_M66_Modem::write(uint8_t c)
+{
+	//if(_debug)
+	//	GSM3CircularBuffer::printCharDebug(c);
+  Serial.write(c);
+	return m_serial.write(c);
+}
 int ProMake_M66_Modem::getICCID(char *iccid)
 {
   return 0;

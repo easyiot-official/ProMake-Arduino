@@ -11,15 +11,15 @@ enum ProMake_GSM_NetworkStatus_t
     GSM_READY,
     GPRS_READY,
     TRANSPARENT_CONNECTED,
+    MQTT_CONNECTED,
     OFF
 };
-class ProMake_M66_Modem;
 
 class ProMakeM66AccessProvider : public ProMakeGsmProviderBase
 {
 private:
+    char* _pin;
     int retryCnt;
-    ProMake_M66_Modem *_theProMakeM66Modem;
     /** Initialize main modem configuration
         @param pin			PIN code
         @return command error if exists
@@ -53,7 +53,7 @@ public:
                             to call repeatedly ready() until you get a result. Default is TRUE.
         @return If synchronous, GSM3_NetworkStatus_t. If asynchronous, returns 0.
     */
-    ProMake_GSM_NetworkStatus_t begin(char *pin = 0, bool restart = true, bool synchronous = true);
+    ProMake_GSM_NetworkStatus_t begin(int8_t pwrPin=-1, char *pin = 0, bool restart = true, bool synchronous = true);
 
     /** Check network access status
         @return 1 if Alive, 0 if down
@@ -81,6 +81,12 @@ public:
     inline ProMake_GSM_NetworkStatus_t getStatus();
 
     void manageResponse(byte from, byte to);
+
+		/** Recognize URC
+			@param oldTail		
+			@return true if successful
+		*/		
+		bool recognizeUnsolicitedEvent(byte oldTail);
 
     /** Restart the modem (will shut down if running)
         @return 1 if success, >1 if error
