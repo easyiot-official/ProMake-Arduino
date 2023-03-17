@@ -7,15 +7,6 @@
 #include "ProMake_M66_AccessProvider.h"
 #include <Print.h>
 
-enum ProMake_GSM_CommandError_t
-{
-    CMD_ONGOING,
-    CMD_OK,
-    CMD_ERROR,
-    CMD_UNEXP,
-    CMD_OK_NO_DATA
-};
-
 #define UMPROVIDERS 3
 
 class ProMake_M66_Modem : public ProMake_CircularBufferManager, public Print
@@ -159,17 +150,10 @@ private:
      */
     // bool recognizeUnsolicitedEvent(byte oldTail);
 
-public:
-    int getICCID(char *iccid);
-
 private:
     /** Continue to modem configuration function
      */
     void ModemConfigurationContinue();
-
-    /** Continue to getICCID function
-     */
-    void getICCIDContinue();
 };
 
 #endif

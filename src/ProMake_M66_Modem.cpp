@@ -37,10 +37,10 @@ void ProMake_M66_Modem::unRegisterUMProvider(ProMakeGsmProviderBase *provider)
 
 unsigned long ProMake_M66_Modem::takeMilliseconds()
 {
-  unsigned long now=millis();
+  unsigned long now = millis();
   unsigned long delta;
-  delta=now-_milliseconds;
-  _milliseconds=now;
+  delta = now - _milliseconds;
+  _milliseconds = now;
   return delta;
 }
 
@@ -60,7 +60,7 @@ void ProMake_M66_Modem::closeCommand(ProMake_GSM_CommandError_t code)
   // and there's been an error
   // we don't know exactly where we are
   if ((code != CMD_OK) && (_ongoingCommand == MODEMCONFIG))
-    _status = ERROR;
+    _status = NET_STATUS_ERROR;
 
   _commandError = code;
   _ongoingCommand = NONE;
@@ -123,8 +123,4 @@ size_t ProMake_M66_Modem::write(uint8_t c)
 	//	GSM3CircularBuffer::printCharDebug(c);
   Serial.write(c);
 	return m_serial.write(c);
-}
-int ProMake_M66_Modem::getICCID(char *iccid)
-{
-  return 0;
 }

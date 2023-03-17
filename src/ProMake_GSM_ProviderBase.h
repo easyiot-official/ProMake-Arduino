@@ -14,6 +14,7 @@ enum ProMake_GSM_commandType_e
     NONE,
     MODEMCONFIG,
     ALIVETEST,
+    SIGNALQUALITY,
     BEGINSMS,
     ENDSMS,
     AVAILABLESMS,
@@ -41,6 +42,16 @@ enum ProMake_GSM_commandType_e
     GETICCID,
     GETIMEI
 };
+
+enum ProMake_GSM_CommandError_t
+{
+    CMD_ONGOING,
+    CMD_OK,
+    CMD_ERROR,
+    CMD_UNEXP,
+    CMD_OK_NO_DATA
+};
+
 class ProMake_M66_Modem;
 
 class ProMakeGsmProviderBase

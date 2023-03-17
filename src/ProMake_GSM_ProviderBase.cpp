@@ -7,8 +7,8 @@ ProMakeGsmProviderBase::ProMakeGsmProviderBase(ProMake_M66_Modem *Modem) : _theP
 
 // Returns 0 if last command is still executing
 // 1 if success
-// >1 if error 
-int ProMakeGsmProviderBase::ready() 
+// >1 if error
+int ProMakeGsmProviderBase::ready()
 {
 	//_theProMakeM66Modem->manageReceivedData();
 

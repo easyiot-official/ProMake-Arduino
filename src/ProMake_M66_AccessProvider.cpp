@@ -25,13 +25,13 @@ ProMake_GSM_NetworkStatus_t ProMakeM66AccessProvider::begin(int8_t pwrPin, char 
   digitalWrite(pwrPin, HIGH);
   delay(10000);
 
-  _theProMakeM66Modem->setStatus(IDLE);
+  _theProMakeM66Modem->setStatus(NET_STATUS_IDLE);
   Serial.println("Powered ON");
 
   //
   _pin = pin;
   _theProMakeM66Modem->openCommand(this, MODEMCONFIG);
-  _theProMakeM66Modem->setStatus(CONNECTING);
+  _theProMakeM66Modem->setStatus(NET_STATUS_CONNECTING);
   ModemConfigurationContinue();
 
   if (synchronous)
@@ -53,6 +53,8 @@ void ProMakeM66AccessProvider::manageResponse(byte from, byte to)
   case ALIVETEST:
     isModemAliveContinue();
     break;
+  case SIGNALQUALITY:
+    GetSignalQualityContinue();
   }
 }
 // Initial configuration continue function.
@@ -76,7 +78,7 @@ void ProMakeM66AccessProvider::ModemConfigurationContinue()
       if (resp)
       {
         // OK received
-        Serial.println("Init done ...");
+        Serial.println("Modem is responding");
         if (_pin && (_pin[0] != 0))
         {
           _theProMakeM66Modem->genericCommand_rqc("AT+CPIN=", false);
@@ -98,6 +100,7 @@ void ProMakeM66AccessProvider::ModemConfigurationContinue()
       {
         if (_theProMakeM66Modem->takeMilliseconds() > __TOUTMODEMCONFIGURATION__)
         {
+          Serial.println("Error - No Response from modem!");
           _theProMakeM66Modem->closeCommand(CMD_UNEXP);
         }
       }
@@ -131,14 +134,24 @@ void ProMakeM66AccessProvider::ModemConfigurationContinue()
       else
       {
         // If not, launch command again
-        if (_theProMakeM66Modem->takeMilliseconds() > __TOUTMODEMCONFIGURATION__ || retryCnt < 0)
+        _theProMakeM66Modem->genericParse_rsp(resp, "+CGREG: 0,2");
+        if (resp)
         {
+          Serial.println("Modem is searching");
+          delay(2000);
+          _theProMakeM66Modem->takeMilliseconds();
+          _theProMakeM66Modem->genericCommand_rqc("AT+CGREG?");
+        }
+        else if (_theProMakeM66Modem->takeMilliseconds() > __TOUTMODEMCONFIGURATION__ || retryCnt < 0)
+        {
+          Serial.println("Cannot register to a network");
           _theProMakeM66Modem->closeCommand(CMD_UNEXP);
         }
         else
         {
           retryCnt--;
           delay(2000);
+          _theProMakeM66Modem->takeMilliseconds();
           _theProMakeM66Modem->genericCommand_rqc("AT+CGREG?");
         }
       }
@@ -161,7 +174,7 @@ void ProMakeM66AccessProvider::ModemConfigurationContinue()
     {
       if (resp)
       {
-        _theProMakeM66Modem->setStatus(GSM_READY);
+        _theProMakeM66Modem->setStatus(NET_STATUS_GSM_READY);
         _theProMakeM66Modem->closeCommand(CMD_OK);
       }
       else if (_theProMakeM66Modem->takeMilliseconds() > __TOUTMODEMCONFIGURATION__)
@@ -173,7 +186,7 @@ void ProMakeM66AccessProvider::ModemConfigurationContinue()
 }
 
 // Alive Test main function.
-int ProMakeM66AccessProvider::isAccessAlive()
+ProMake_GSM_CommandError_t ProMakeM66AccessProvider::isAccessAlive()
 {
   _theProMakeM66Modem->setCommandError(CMD_ONGOING);
   _theProMakeM66Modem->setCommandCounter(1);
@@ -201,6 +214,76 @@ switch _theProMakeM66Modem->getCommandCounter()) {
       break;
   }
   */
+}
+
+ProMake_GSM_CommandError_t ProMakeM66AccessProvider::getSignalQuality(char *rssi, char *ber)
+{
+  _rssi = rssi;
+  _ber = ber;
+  _rssi[0] = 0;
+  _ber[0] = 0;
+
+  _theProMakeM66Modem->setCommandError(CMD_ONGOING);
+  _theProMakeM66Modem->setCommandCounter(1);
+  _theProMakeM66Modem->openCommand(this, SIGNALQUALITY);
+  GetSignalQualityContinue();
+
+  unsigned long timeOut = millis();
+  while (((millis() - timeOut) < 5000) & (ready() == 0));
+
+  return _theProMakeM66Modem->getCommandError();
+}
+
+void ProMakeM66AccessProvider::GetSignalQualityContinue()
+{
+
+  bool rsp;
+  switch (_theProMakeM66Modem->getCommandCounter())
+  {
+  case 1:
+    _theProMakeM66Modem->genericCommand_rqc("AT+CSQ");
+    _theProMakeM66Modem->setCommandCounter(2);
+    break;
+  case 2:
+    if (_theProMakeM66Modem->genericParse_rsp(rsp, "+CSQ: "))
+    {
+      if (rsp)
+      {
+        parseCSQ_available(rsp);
+        _theProMakeM66Modem->closeCommand(CMD_OK);
+      }
+      else
+        _theProMakeM66Modem->closeCommand(CMD_UNEXP);
+    }
+    break;
+  }
+}
+
+bool ProMakeM66AccessProvider::parseCSQ_available(bool &rsp)
+{
+  char c;
+  char quality[50] = "";
+  int i = 0;
+  if (!(_theProMakeM66Modem->theBuffer().chopUntil("+CSQ: ", true)))
+    rsp = false;
+  else
+    rsp = true;
+
+  while (((c = _theProMakeM66Modem->theBuffer().read()) != 0) & (i < 6))
+  {
+    if ((c < 58) & (c > 47) || c == ',')
+    {
+      quality[i] = c;
+      i++;
+    }
+  }
+  quality[i] = 0;
+
+  char *res_tok = strtok(quality, ",");
+  strcpy(_rssi, res_tok);
+  res_tok = strtok(NULL, ",");
+  strcpy(_ber, res_tok);
+  return true;
 }
 
 ///////////////////////////////////////////////////////UNSOLICITED RESULT CODE (URC) FUNCTIONS///////////////////////////////////////////////////////////////////
