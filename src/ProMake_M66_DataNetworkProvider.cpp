@@ -22,7 +22,8 @@ ProMake_GSM_NetworkStatus_t ProMakeM66DataNetworkProvider::attachGPRS(char *apn,
     if (synchronous)
     {
         // if we shorten this delay, the command fails
-        while (ready() == 0)
+        unsigned long timeOut = millis();
+        while (((millis() - timeOut) < 20000) & (ready() == 0))
             delay(100);
     }
 
@@ -182,8 +183,9 @@ ProMake_GSM_NetworkStatus_t ProMakeM66DataNetworkProvider::detachGPRS(bool synch
 
     if (synchronous)
     {
-        while (ready() == 0)
-            delay(1);
+        unsigned long timeOut = millis();
+        while (((millis() - timeOut) < 20000) & (ready() == 0))
+            delay(100);
     }
 
     return _theProMakeM66Modem->getStatus();

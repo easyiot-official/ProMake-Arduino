@@ -11,11 +11,15 @@
 class ProMakeM66MqttClientProvider : public ProMakeGsmProviderBase
 {
 private:
-    const char *_clientId;
     int _remotePort; // Current operation remote port.
     const char *_remoteServer;
     int _keepAliveTime;
 
+    const char *_clientId;
+    const char *_username;
+    const char *_password;
+
+    int _willFlag;
     const char *_willTopic;
     const char *_willPayload;
     int _willQoS;
@@ -55,17 +59,17 @@ public:
         @param id_socket	Local socket number
         @return 0 if command running, 1 if success, otherwise error
      */
-    int connectMqttClient(const char *clientId, const char *server, int port, const char *willTopic, const char *willPayload, int willQoS, int willRetain, int keepAliveTime, bool synchronous = true);
+    ProMake_GSM_NetworkStatus_t connectMqttClient(const char *clientId, const char *server, int port, const char *username, const char *password, int willFlag, const char *willTopic, const char *willPayload, int willQoS, int willRetain, int keepAliveTime, bool synchronous = true);
 
     /** Close a socket
     @param client1Server0	1 if modem acts as client, 0 if acts as server
     @param id_socket		Socket
     @return 0 if command running, 1 if success, otherwise error
     */
-    int disconnectMqtt(bool synchronous = true);
+    ProMake_GSM_CommandError_t disconnectMqtt(bool synchronous = true);
 
-    int publish(const char *topic, const char *payload, int qos, int retain, bool synchronous = true);
-    int subscribe(const char *topic, int qos, bool synchronous = true);
+    ProMake_GSM_CommandError_t publish(const char *topic, const char *payload, int qos, int retain, bool synchronous = true);
+    ProMake_GSM_CommandError_t subscribe(const char *topic, int qos, bool synchronous = true);
 
     /** Recognize unsolicited event
         @param oldTail

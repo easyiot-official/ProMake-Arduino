@@ -14,11 +14,14 @@ void ProMakeM66MqttClientProvider::setCallback(void (*callback)(char *, char *))
 }
 
 // Connect MQTT main function.
-int ProMakeM66MqttClientProvider::connectMqttClient(const char *clientId, const char *server, int port, const char *willTopic, const char *willPayload, int willQoS, int willRetain, int keepAliveTime, bool synchronous)
+ProMake_GSM_NetworkStatus_t ProMakeM66MqttClientProvider::connectMqttClient(const char *clientId, const char *server, int port, const char *username, const char *password, int willFlag, const char *willTopic, const char *willPayload, int willQoS, int willRetain, int keepAliveTime, bool synchronous)
 {
     _clientId = clientId;
     _remotePort = port;
     _remoteServer = server;
+    _username = username;
+    _password = password;
+    _willFlag = willFlag;
     _willTopic = willTopic;
     _willPayload = willPayload;
     _willQoS = willQoS;
@@ -31,7 +34,8 @@ int ProMakeM66MqttClientProvider::connectMqttClient(const char *clientId, const 
     if (synchronous)
     {
         // if we shorten this delay, the command fails
-        while (ready() == 0)
+        unsigned long timeOut = millis();
+        while (((millis() - timeOut) < 20000) & (ready() == 0))
             delay(100);
     }
     return _theProMakeM66Modem->getStatus();
@@ -53,7 +57,9 @@ void ProMakeM66MqttClientProvider::connectMQTTClientContinue()
     switch (_theProMakeM66Modem->getCommandCounter())
     {
     case 1:
-        _theProMakeM66Modem->genericCommand_rqc("AT+QMTCFG=\"WILL\",0,1,", false);
+        _theProMakeM66Modem->genericCommand_rqc("AT+QMTCFG=\"WILL\",0,", false);
+        _theProMakeM66Modem->print(_willFlag);
+        _theProMakeM66Modem->print(',');
         _theProMakeM66Modem->print(_willQoS);
         _theProMakeM66Modem->print(',');
         _theProMakeM66Modem->print(_willRetain);
@@ -165,6 +171,20 @@ void ProMakeM66MqttClientProvider::connectMQTTClientContinue()
                 _theProMakeM66Modem->genericCommand_rqc("AT+QMTCONN=0,\"", false);
                 _theProMakeM66Modem->print(_clientId);
                 _theProMakeM66Modem->print('"');
+                if (_username != 0)
+                {
+                    _theProMakeM66Modem->print(',');
+                    _theProMakeM66Modem->print('"');
+                    _theProMakeM66Modem->print(_username);
+                    _theProMakeM66Modem->print('"');
+                }
+                if (_password != 0)
+                {
+                    _theProMakeM66Modem->print(',');
+                    _theProMakeM66Modem->print('"');
+                    _theProMakeM66Modem->print(_password);
+                    _theProMakeM66Modem->print('"');
+                }
                 _theProMakeM66Modem->print('\r');
 
                 _theProMakeM66Modem->setCommandCounter(9);
@@ -186,7 +206,7 @@ void ProMakeM66MqttClientProvider::connectMQTTClientContinue()
             if (resp)
             {
                 // Great. We're done
-                _theProMakeM66Modem->setStatus(MQTT_CONNECTED);
+                _theProMakeM66Modem->setStatus(NET_STATUS_MQTT_CONNECTED);
                 //_theProMakeM66Modem->theBuffer().chopUntil(auxLocate, true);
                 _theProMakeM66Modem->closeCommand(CMD_OK);
             }
@@ -203,7 +223,7 @@ void ProMakeM66MqttClientProvider::connectMQTTClientContinue()
 }
 
 // Disconnect TCP main function.
-int ProMakeM66MqttClientProvider::disconnectMqtt(bool synchronous)
+ProMake_GSM_CommandError_t ProMakeM66MqttClientProvider::disconnectMqtt(bool synchronous)
 {
     _theProMakeM66Modem->openCommand(this, DISCONNECTMQTT);
     _theProMakeM66Modem->unRegisterUMProvider(this);
@@ -212,7 +232,8 @@ int ProMakeM66MqttClientProvider::disconnectMqtt(bool synchronous)
     if (synchronous)
     {
         // if we shorten this delay, the command fails
-        while (ready() == 0)
+        unsigned long timeOut = millis();
+        while (((millis() - timeOut) < 10000) & (ready() == 0))
             delay(100);
     }
     return _theProMakeM66Modem->getCommandError();
@@ -250,7 +271,7 @@ void ProMakeM66MqttClientProvider::disconnectMqttContinue()
             if (resp)
             {
                 // Great. We're done
-                _theProMakeM66Modem->setStatus(GPRS_READY);
+                _theProMakeM66Modem->setStatus(NET_STATUS_GPRS_READY);
                 _theProMakeM66Modem->closeCommand(CMD_OK);
             }
             else
@@ -260,9 +281,9 @@ void ProMakeM66MqttClientProvider::disconnectMqttContinue()
     }
 }
 
-int ProMakeM66MqttClientProvider::publish(const char *topic, const char *payload, int qos, int retain, bool synchronous)
+ProMake_GSM_CommandError_t ProMakeM66MqttClientProvider::publish(const char *topic, const char *payload, int qos, int retain, bool synchronous)
 {
-    if (_theProMakeM66Modem->getStatus() == MQTT_CONNECTED)
+    if (_theProMakeM66Modem->getStatus() == NET_STATUS_MQTT_CONNECTED)
     {
         _pubTopic = topic;
         _pubPayload = payload;
@@ -274,12 +295,13 @@ int ProMakeM66MqttClientProvider::publish(const char *topic, const char *payload
         if (synchronous)
         {
             // if we shorten this delay, the command fails
-            while (ready() == 0)
+            unsigned long timeOut = millis();
+            while (((millis() - timeOut) < 5000) & (ready() == 0))
                 delay(100);
         }
         return _theProMakeM66Modem->getCommandError();
     }
-    return -1;
+    return CMD_ERROR;
 }
 
 void ProMakeM66MqttClientProvider::publishContinue()
@@ -343,9 +365,9 @@ void ProMakeM66MqttClientProvider::publishContinue()
     }
 }
 
-int ProMakeM66MqttClientProvider::subscribe(const char *topic, int qos, bool synchronous)
+ProMake_GSM_CommandError_t ProMakeM66MqttClientProvider::subscribe(const char *topic, int qos, bool synchronous)
 {
-    if (_theProMakeM66Modem->getStatus() == MQTT_CONNECTED)
+    if (_theProMakeM66Modem->getStatus() == NET_STATUS_MQTT_CONNECTED)
     {
         _subTopic = topic;
         _subQos = qos;
@@ -355,12 +377,13 @@ int ProMakeM66MqttClientProvider::subscribe(const char *topic, int qos, bool syn
         if (synchronous)
         {
             // if we shorten this delay, the command fails
-            while (ready() == 0)
+            unsigned long timeOut = millis();
+            while (((millis() - timeOut) < 5000) & (ready() == 0))
                 delay(100);
         }
         return _theProMakeM66Modem->getCommandError();
     }
-    return -1;
+    return CMD_ERROR;
 }
 
 void ProMakeM66MqttClientProvider::subscribeContinue()
