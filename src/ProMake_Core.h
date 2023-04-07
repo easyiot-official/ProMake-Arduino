@@ -22,6 +22,7 @@ class ProMake_CoreClass{
 	public:
 		ProMake_CoreClass(){}
 		uint16_t	request16(byte device);
+		uint32_t	request24(byte device, byte delay, byte timeout);
 		void 		write(byte value);
 		void 		write1(byte device, byte value);
 		void 		write8(byte device, byte reg, byte value);
