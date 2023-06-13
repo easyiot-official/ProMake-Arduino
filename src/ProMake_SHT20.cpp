@@ -13,7 +13,6 @@ uint16_t ProMake_SHT20::readValue(byte cmd)
     uint8_t checksum= (uint8_t)((readValue & 0x00FF));
     uint16_t rawValue = (uint16_t)((readValue & 0x00FFFF00) >> 8);
 
-
     if(checkCRC(rawValue, checksum) != 0){
         return (ERROR_BAD_CRC);
     }
@@ -31,16 +30,68 @@ float ProMake_SHT20::readHumidity(void)
     return (rh);
 }
 
-float ProMake_SHT20::readTemperature(void)
+float ProMake_SHT20::readTemperatureC(void)
 {
     uint16_t rawTemperature = readValue(TRIGGER_TEMP_MEASURE_NOHOLD);
     if(rawTemperature == ERROR_I2C_TIMEOUT || rawTemperature == ERROR_BAD_CRC){
         return(rawTemperature);
     }
     float tempTemperature = rawTemperature * (175.72 / 65536.0);
-    float realTemperature = tempTemperature - 46.85;
-    return (realTemperature);
+    float realTemperatureC = tempTemperature - 46.85;
+    return (realTemperatureC);
 }
+
+float ProMake_SHT20::readTemperatureF(void)
+{
+    uint16_t rawTemperature = readValue(TRIGGER_TEMP_MEASURE_NOHOLD);
+    if(rawTemperature == ERROR_I2C_TIMEOUT || rawTemperature == ERROR_BAD_CRC){
+        return(rawTemperature);
+    }
+    float tempTemperature = rawTemperature * (175.72 / 65536.0);
+    float realTemperatureC = tempTemperature - 46.85;
+    float realTemperatureF = (realTemperatureC * 1.8) + 32;
+    return (realTemperatureF);
+}
+
+float ProMake_SHT20::vpd()
+{
+  float tempC = readTemperatureC();
+  float RH = readHumidity();
+
+  float es = 0.6108 * exp(17.27 * tempC / (tempC + 237.3));
+  float ae = RH / 100 * es;
+  float vpd_kPa = es - ae;
+
+  return vpd_kPa;
+}
+
+float ProMake_SHT20::dew_pointC()
+{
+  float tempC = readTemperatureC();
+  float RH = readHumidity();
+
+  float tem = -1.0 * tempC;
+  float esdp = 6.112 * exp(-1.0 * 17.67 * tem / (243.5 - tem));
+  float ed = RH / 100.0 * esdp;
+  float eln = log(ed / 6.112);
+  float dew_pointC = -243.5 * eln / (eln - 17.67 );
+  return dew_pointC;
+}
+
+float ProMake_SHT20::dew_pointF()
+{
+  float tempC = readTemperatureC();
+  float RH = readHumidity();
+
+  float tem = -1.0 * tempC;
+  float esdp = 6.112 * exp(-1.0 * 17.67 * tem / (243.5 - tem));
+  float ed = RH / 100.0 * esdp;
+  float eln = log(ed / 6.112);
+  float dew_pointC = -243.5 * eln / (eln - 17.67 );
+  float dew_pointF = (dew_pointC * 1.8) + 32;
+  return dew_pointF;
+}
+
 
 void ProMake_SHT20::setResolution(byte resolution)
 {
