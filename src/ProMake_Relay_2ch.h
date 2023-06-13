@@ -1,5 +1,5 @@
-#ifndef __PROMAKE_RELAY_2CH_H__
-#define __PROMAKE_RELAY_2CH_H__
+#ifndef PROMAKE_RELAY_2CH_H_INCLUDED
+#define PROMAKE_RELAY_2CH_H_INCLUDED
 
 #include <ProMake.h>
 

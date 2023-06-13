@@ -1,5 +1,5 @@
-#ifndef _PROMAKE_M66_DATANETWORKPROVIDER_
-#define _PROMAKE_M66_DATANETWORKPROVIDER_
+#ifndef PROMAKE_M66_DATANETWORKPROVIDER_H_INCLUDED
+#define PROMAKE_M66_DATANETWORKPROVIDER_H_INCLUDED
 
 #include <ProMake_GSM_ProviderBase.h>
 #include "ProMake_M66_AccessProvider.h"
@@ -138,6 +138,12 @@ public:
      */
     int getIMEI(char *imei);
 
+    /** Recognize URC
+        @param oldTail
+        @return true if successful
+    */
+    bool recognizeUnsolicitedEvent(byte oldTail);
+    
     /** Manages modem response
         @param from 		Initial byte of buffer
         @param to 			Final byte of buffer

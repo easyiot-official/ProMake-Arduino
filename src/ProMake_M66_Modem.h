@@ -1,5 +1,5 @@
-#ifndef __ProMake_M66__
-#define __ProMake_M66__
+#ifndef PROMAKE_M66_MODEM_H_INCLUDED
+#define PROMAKE_M66_MODEM_H_INCLUDED
 
 #include <HardwareSerial.h>
 #include "ProMake_CircularBuffer.h"

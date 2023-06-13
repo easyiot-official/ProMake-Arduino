@@ -10,8 +10,8 @@
 	ADC081C021 - http://www.ti.com/lit/ds/symlink/adc081c021.pdf
 */
 
-#ifndef ProMake_ADC081_h
-#define ProMake_ADC081_h
+#ifndef PROMAKE_ADC081_H_INCLUDED
+#define PROMAKE_ADC081_H_INCLUDED
 
 // System Include
 #include <inttypes.h>

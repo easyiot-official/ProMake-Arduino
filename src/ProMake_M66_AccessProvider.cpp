@@ -2,7 +2,7 @@
 #include "ProMake_M66_Modem.h"
 
 #define __TOUTSHUTDOWN__ 5000
-#define __TOUTMODEMCONFIGURATION__ 5000 // equivalent to 30000 because of time in interrupt routine.
+#define __TOUTMODEMCONFIGURATION__ 20000
 #define __TOUTAT__ 1000
 
 ProMakeM66AccessProvider::ProMakeM66AccessProvider(ProMake_M66_Modem *Modem, bool debug) : ProMakeGsmProviderBase(Modem)
@@ -37,8 +37,9 @@ ProMake_GSM_NetworkStatus_t ProMakeM66AccessProvider::begin(int8_t pwrPin, char 
   if (synchronous)
   {
     // if we shorten this delay, the command fails
-    while (ready() == 0)
-      delay(1000);
+    unsigned long timeOut = millis();
+    while (((millis() - timeOut) < __TOUTMODEMCONFIGURATION__) & (ready() == 0))
+      delay(100);
   }
   return _theProMakeM66Modem->getStatus();
 }
@@ -142,17 +143,26 @@ void ProMakeM66AccessProvider::ModemConfigurationContinue()
           _theProMakeM66Modem->takeMilliseconds();
           _theProMakeM66Modem->genericCommand_rqc("AT+CGREG?");
         }
-        else if (_theProMakeM66Modem->takeMilliseconds() > __TOUTMODEMCONFIGURATION__ || retryCnt < 0)
-        {
-          Serial.println("Cannot register to a network");
-          _theProMakeM66Modem->closeCommand(CMD_UNEXP);
-        }
         else
         {
-          retryCnt--;
-          delay(2000);
-          _theProMakeM66Modem->takeMilliseconds();
-          _theProMakeM66Modem->genericCommand_rqc("AT+CGREG?");
+          _theProMakeM66Modem->genericParse_rsp(resp, "+CGREG: 0,0");
+          if (resp)
+          {
+            Serial.println("register failed");
+            _theProMakeM66Modem->closeCommand(CMD_UNEXP);
+          }
+          else if (_theProMakeM66Modem->takeMilliseconds() > __TOUTMODEMCONFIGURATION__ || retryCnt < 0)
+          {
+            Serial.println("register timed out");
+            _theProMakeM66Modem->closeCommand(CMD_UNEXP);
+          }
+          else
+          {
+            retryCnt--;
+            delay(2000);
+            _theProMakeM66Modem->takeMilliseconds();
+            //_theProMakeM66Modem->genericCommand_rqc("AT+CGREG?");
+          }
         }
       }
     }
@@ -292,10 +302,10 @@ bool ProMakeM66AccessProvider::parseCSQ_available(bool &rsp)
 bool ProMakeM66AccessProvider::recognizeUnsolicitedEvent(byte oldTail)
 {
 
-  if (_theProMakeM66Modem->theBuffer().locate("POWER DOWN"))
+  if (_theProMakeM66Modem->theBuffer().locate("NORMAL POWER DOWN"))
   {
-    Serial.println("ProMakeM66AccessProvider::recognizeUnsolicitedEvent");
-    _theProMakeM66Modem->theBuffer().flush();
+    //_theProMakeM66Modem->theBuffer().flush();
+    //delay(5000);
     return true;
   }
 

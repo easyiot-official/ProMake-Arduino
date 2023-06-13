@@ -3,8 +3,11 @@
 
 const char _command_CGATT[] = "AT+CGATT=";
 const char _command_SEPARATOR[] = "\",\"";
+
+#define __TOUTGPRS__ 5000
 ProMakeM66DataNetworkProvider::ProMakeM66DataNetworkProvider(ProMake_M66_Modem *Modem) : ProMakeGsmProviderBase(Modem)
 {
+    _theProMakeM66Modem->registerUMProvider(this);
 }
 // Attach GPRS main function.
 ProMake_GSM_NetworkStatus_t ProMakeM66DataNetworkProvider::attachGPRS(char *apn, char *user_name, char *password, bool synchronous)
@@ -52,6 +55,7 @@ void ProMakeM66DataNetworkProvider::attachGPRSContinue()
         _theProMakeM66Modem->print(1);
         _theProMakeM66Modem->print('\r');
         _theProMakeM66Modem->setCommandCounter(2);
+        _theProMakeM66Modem->takeMilliseconds();
     }
     else if (ct == 2)
     {
@@ -64,7 +68,12 @@ void ProMakeM66DataNetworkProvider::attachGPRSContinue()
                 _theProMakeM66Modem->setCommandCounter(3);
             }
             else
-                _theProMakeM66Modem->closeCommand(CMD_UNEXP);
+            {
+                if (_theProMakeM66Modem->takeMilliseconds() > __TOUTGPRS__)
+                {
+                    _theProMakeM66Modem->closeCommand(CMD_UNEXP);
+                }
+            }
         }
     }
     else if (ct == 3)
@@ -470,3 +479,19 @@ void ProMakeM66DataNetworkProvider::manageResponse(byte from, byte to)
 }
 
 ProMake_GSM_NetworkStatus_t ProMakeM66DataNetworkProvider::getStatus() { return _theProMakeM66Modem->getStatus(); };
+
+///////////////////////////////////////////////////////UNSOLICITED RESULT CODE (URC) FUNCTIONS///////////////////////////////////////////////////////////////////
+
+// URC recognize.
+bool ProMakeM66DataNetworkProvider::recognizeUnsolicitedEvent(byte oldTail)
+{
+
+    if (_theProMakeM66Modem->theBuffer().locate("+PDP DEACT"))
+    {
+        _theProMakeM66Modem->setStatus(NET_STATUS_GSM_READY);
+        _theProMakeM66Modem->theBuffer().flush();
+        return true;
+    }
+
+    return false;
+}

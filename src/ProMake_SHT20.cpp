@@ -1,6 +1,5 @@
 #include "ProMake_SHT20.h"
 
-
 uint16_t ProMake_SHT20::readValue(byte cmd)
 {
     ProMakeCore.write1(SLAVE_ADDRESS, cmd);

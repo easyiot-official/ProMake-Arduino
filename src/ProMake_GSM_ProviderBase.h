@@ -1,8 +1,9 @@
-#ifndef _PROMAKE_GSM_BASEPROVIDER_
-#define _PROMAKE_GSM_BASEPROVIDER_
+#ifndef PROMAKE_GSM_BASEPROVIDER_H_INCLUDED
+#define PROMAKE_GSM_BASEPROVIDER_H_INCLUDED
 
 #include <inttypes.h>
 #include <stddef.h>
+#include <Arduino.h>
 
 #ifndef byte
 #define byte uint8_t

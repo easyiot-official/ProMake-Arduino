@@ -4,8 +4,10 @@ ProMake_VEML7700::ProMake_VEML7700()
 {
 }
 
-void ProMake_VEML7700::begin()
+bool ProMake_VEML7700::begin()
 {
+  if(!ping(I2C_ADDRESS))
+    return false;
   // write initial state to VEML7700
   register_cache[0] = ( (uint32_t(ALS_GAIN_x2) << ALS_SM_SHIFT) |
                         (uint32_t(ALS_INTEGRATION_100ms) << ALS_IT_SHIFT) |
@@ -22,10 +24,13 @@ void ProMake_VEML7700::begin()
 
   // wait at least 2.5ms as per datasheet
   delay(3);
+  return true;
 }
 
-void ProMake_VEML7700::begin(uint8_t als_gain)
+bool ProMake_VEML7700::begin(uint8_t als_gain)
 {
+  if(!ping(I2C_ADDRESS))
+    return false;
   // write initial state to VEML7700
   register_cache[0] = ( (uint32_t(als_gain) << ALS_SM_SHIFT) |
                         (uint32_t(ALS_INTEGRATION_100ms) << ALS_IT_SHIFT) |
@@ -42,6 +47,7 @@ void ProMake_VEML7700::begin(uint8_t als_gain)
 
   // wait at least 2.5ms as per datasheet
   delay(3);
+  return true;
 }
 
 uint8_t ProMake_VEML7700::sendData(uint8_t command, uint32_t data)

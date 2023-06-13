@@ -1,28 +1,5 @@
-/* Arduino SSD1306Ascii Library
- * Copyright (C) 2015 by William Greiman
- *
- * This file is part of the Arduino SSD1306Ascii Library
- *
- * This Library is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This Library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with the Arduino SSD1306Ascii Library.  If not, see
- * <http://www.gnu.org/licenses/>.
- */
-/**
- * @file SSD1306init.h
- * @brief Display controller initialization commands.
- */
-#ifndef SSD1306init_h
-#define SSD1306init_h
+#ifndef PROMAKE_SSD1306init_H_INCLUDED
+#define PROMAKE_SSD1306init_H_INCLUDED
 //------------------------------------------------------------------------------
 #ifndef __AVR__
 /** Handle AVR flash addressing. */
@@ -263,4 +240,4 @@ static const DevType MEM_TYPE SH1106_128x64 =  {
   64,
   2    // SH1106 is a 132x64 controller.  Use middle 128 columns.
 };
-#endif  // SSD1306init_h
+#endif

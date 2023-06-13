@@ -1,16 +1,3 @@
-/*
-	This is a library for the SX02 
-	Analog IN -	Max Input 3.3V
-
-	The board uses I2C for communication.
-	
-	The board communicates with one I2C devices:
-	- ADC081C021
-	
-	Data Sheets:
-	ADC081C021 - http://www.ti.com/lit/ds/symlink/adc081c021.pdf
-*/
-
 #include <ProMake_ADC081.h>
 #include <math.h>
 

@@ -6,8 +6,8 @@
 
 *********************************************************/
 
-#ifndef	ProMake_Core_h
-#define ProMake_Core_h
+#ifndef	PROMAKE_Core_H_INCLUDED
+#define PROMAKE_Core_H_INCLUDED
 
 #pragma once
 

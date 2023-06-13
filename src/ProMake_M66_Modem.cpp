@@ -1,4 +1,3 @@
-
 #include "ProMake_M66_Modem.h"
 
 ProMake_M66_Modem::ProMake_M66_Modem(HardwareSerial &serial, bool debug) : m_serial(serial), cb(this)

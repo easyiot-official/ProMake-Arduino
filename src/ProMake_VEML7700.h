@@ -1,5 +1,5 @@
-#ifndef ProMake_VEML7700_h
-#define ProMake_VEML7700_h
+#ifndef PROMAKE_VEML7700_H_INCLUDED
+#define PROMAKE_VEML7700_H_INCLUDED
 
 #include "ProMake_Core.h"
 
@@ -244,17 +244,17 @@ public:
   /**
    * @fn begin
    * @brief Init function
-   * @return None
+   * @return If device is online
    */
-  void begin();
+  bool begin();
 
   /**
    * @fn begin
    * @brief Init function
    * @param als_gain Set ALS gain coefficient
-   * @return None
+   * @return If device is online
    */
-  void begin(uint8_t als_gain);
+  bool begin(uint8_t als_gain);
 
   /**
    * @fn getALSLux

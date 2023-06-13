@@ -1,5 +1,5 @@
-#ifndef ProMake_MCP2515_H_
-#define ProMake_MCP2515_H_
+#ifndef PROMAKE_MCP2515_H_INCLUDED
+#define PROMAKE_MCP2515_H_INCLUDED
 
 #include <SPI.h>
 #include "can.h"

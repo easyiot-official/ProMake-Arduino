@@ -1,5 +1,5 @@
-#ifndef ProMake_SHT20_h
-#define ProMake_SHT20_h
+#ifndef PROMAKE_SHT20_H_INCLUDED
+#define PROMAKE_SHT20_H_INCLUDED
 
 #include "ProMake_Core.h"
 
