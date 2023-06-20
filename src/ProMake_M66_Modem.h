@@ -2,7 +2,7 @@
 #define PROMAKE_M66_MODEM_H_INCLUDED
 
 #include <HardwareSerial.h>
-#include "ProMake_CircularBuffer.h"
+#include "AT_Command/ProMake_CircularBuffer.h"
 #include "ProMake_GSM_ProviderBase.h"
 #include "ProMake_M66_AccessProvider.h"
 #include <Print.h>

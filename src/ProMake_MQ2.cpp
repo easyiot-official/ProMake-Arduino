@@ -1,5 +1,6 @@
 #include "Arduino.h"
 #include "ProMake_MQ2.h"
+#include <ProMake_debug.h>
 
 ProMake_MQ2::ProMake_MQ2(int pin)
 {
@@ -11,9 +12,7 @@ void ProMake_MQ2::begin()
 {
     pinMode(_pin, INPUT);
     Ro = MQCalibration();
-    Serial.print("Ro: ");
-    Serial.print(Ro);
-    Serial.println(" kohm");
+    PROMAKE_LOGDEBUG2("Ro:", Ro, "kohm");
 }
 
 void ProMake_MQ2::close()
@@ -28,7 +27,7 @@ bool ProMake_MQ2::checkCalibration()
 {
     if (Ro < 0.0)
     {
-        Serial.println("Device not calibrated, call ProMake_MQ2::begin before reading any value.");
+        PROMAKE_LOGERROR("Device not calibrated, call ProMake_MQ2::begin before reading any value.");
         return false;
     }
 
@@ -110,8 +109,7 @@ float ProMake_MQ2::MQCalibration()
     for (int i = 0; i < CALIBARAION_SAMPLE_TIMES; i++)
     {
         int raw_adc = analogRead(_pin);
-        Serial.print("raw_adc:");
-        Serial.println(raw_adc);
+        PROMAKE_LOGDEBUG1("raw_adc:", raw_adc);
         val += MQResistanceCalculation(raw_adc);
         delay(CALIBRATION_SAMPLE_INTERVAL);
     }

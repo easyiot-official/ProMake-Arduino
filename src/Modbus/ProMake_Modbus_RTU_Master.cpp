@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <ProMake_debug.h>
 #include "ProMake_Modbus_RTU_Master.h"
 
 
@@ -24,7 +25,7 @@ bool ProMake_Modbus_RTU_Master::readCoilsRegister(uint8_t id, uint16_t reg)
     uint8_t ret = 0;
     if ((id == 0) && (id > 0xF7))
     {
-        RTU_DBG("Device id error");
+        PROMAKE_LOGDEBUG3("Device id error");
         return 0;
     }
     pRtuPacketHeader_t header = packed(id, eCMD_READ_COILS, temp, sizeof(temp));
@@ -36,7 +37,7 @@ bool ProMake_Modbus_RTU_Master::readCoilsRegister(uint8_t id, uint16_t reg)
             val = true;
         free(header);
     }
-    RTU_DBG(val, HEX);
+    PROMAKE_LOGDEBUG3(val, HEX);
     return val;
 }
 
@@ -47,7 +48,7 @@ bool ProMake_Modbus_RTU_Master::readDiscreteInputsRegister(uint8_t id, uint16_t 
     uint8_t ret = 0;
     if ((id == 0) && (id > 0xF7))
     {
-        RTU_DBG("Device id error");
+        PROMAKE_LOGDEBUG3("Device id error");
         return 0;
     }
     pRtuPacketHeader_t header = packed(id, eCMD_READ_DISCRETE, temp, sizeof(temp));
@@ -59,7 +60,7 @@ bool ProMake_Modbus_RTU_Master::readDiscreteInputsRegister(uint8_t id, uint16_t 
             val = true;
         free(header);
     }
-    RTU_DBG(val, HEX);
+    PROMAKE_LOGDEBUG3(val, HEX);
     return val;
 }
 
@@ -70,7 +71,7 @@ uint16_t ProMake_Modbus_RTU_Master::readHoldingRegister(uint8_t id, uint16_t reg
     uint8_t ret = 0;
     if ((id == 0) && (id > 0xF7))
     {
-        RTU_DBG("Device id error");
+        PROMAKE_LOGDEBUG3("Device id error");
         return 0;
     }
     pRtuPacketHeader_t header = packed(id, eCMD_READ_HOLDING, temp, sizeof(temp));
@@ -81,7 +82,7 @@ uint16_t ProMake_Modbus_RTU_Master::readHoldingRegister(uint8_t id, uint16_t reg
         val = (header->payload[1] << 8) | header->payload[2];
         free(header);
     }
-    // RTU_DBG(val, HEX);
+    // PROMAKE_LOGDEBUG3(val, HEX);
     return val;
 }
 
@@ -92,15 +93,15 @@ uint16_t ProMake_Modbus_RTU_Master::readInputRegister(uint8_t id, uint16_t reg)
     uint8_t ret = 0;
     if ((id == 0) && (id > 0xF7))
     {
-        RTU_DBG("Device id error");
+        PROMAKE_LOGDEBUG3("Device id error");
         return 0;
     }
     pRtuPacketHeader_t header = packed(id, eCMD_READ_INPUT, temp, sizeof(temp));
-    RTU_DBG(header->len, HEX);
-    RTU_DBG(header->id, HEX);
-    RTU_DBG(header->cmd, HEX);
+    PROMAKE_LOGDEBUG3(header->len, HEX);
+    PROMAKE_LOGDEBUG3(header->id, HEX);
+    PROMAKE_LOGDEBUG3(header->cmd, HEX);
     for (uint8_t i = 0; i < sizeof(temp) + 2; i++)
-        RTU_DBG(header->payload[i], HEX);
+        PROMAKE_LOGDEBUG3(header->payload[i], HEX);
     sendPackage(header);
     header = recvAndParsePackage(id, (uint8_t)eCMD_READ_INPUT, 2, &ret);
     if ((ret == 0) && (header != NULL))
@@ -108,7 +109,7 @@ uint16_t ProMake_Modbus_RTU_Master::readInputRegister(uint8_t id, uint16_t reg)
         val = (header->payload[1] << 8) | header->payload[2];
         free(header);
     }
-    RTU_DBG(val, HEX);
+    PROMAKE_LOGDEBUG3(val, HEX);
     return val;
 }
 
@@ -119,7 +120,7 @@ uint8_t ProMake_Modbus_RTU_Master::writeCoilsRegister(uint8_t id, uint16_t reg, 
     uint8_t ret = 0;
     if (id > 0xF7)
     {
-        RTU_DBG("Device id error");
+        PROMAKE_LOGDEBUG3("Device id error");
         return 0;
     }
     pRtuPacketHeader_t header = packed(id, eCMD_WRITE_COILS, temp, sizeof(temp));
@@ -137,7 +138,7 @@ uint8_t ProMake_Modbus_RTU_Master::writeHoldingRegister(uint8_t id, uint16_t reg
     uint8_t ret = 0;
     if (id > 0xF7)
     {
-        RTU_DBG("Device id error");
+        PROMAKE_LOGDEBUG3("Device id error");
         return 0;
     }
     pRtuPacketHeader_t header = packed(id, eCMD_WRITE_HOLDING, temp, sizeof(temp));
@@ -146,7 +147,7 @@ uint8_t ProMake_Modbus_RTU_Master::writeHoldingRegister(uint8_t id, uint16_t reg
     memcpy(data, header, sizeof(sRtuPacketHeader_t));
     while (data != NULL)
     {
-        RTU_DBG(*data, HEX);
+        PROMAKE_LOGDEBUG3(*data, HEX);
         data++;
     }
     free(data);
@@ -158,7 +159,7 @@ uint8_t ProMake_Modbus_RTU_Master::writeHoldingRegister(uint8_t id, uint16_t reg
         val = (header->payload[2] << 8) | header->payload[3];
         free(header);
     }
-    // RTU_DBG(val, HEX);
+    // PROMAKE_LOGDEBUG3(val, HEX);
     return ret;
 }
 
@@ -169,7 +170,7 @@ uint8_t ProMake_Modbus_RTU_Master::readCoilsRegister(uint8_t id, uint16_t reg, u
     uint8_t ret = 0;
     if ((id == 0) && (id > 0xF7))
     {
-        RTU_DBG("Device id error");
+        PROMAKE_LOGDEBUG3("Device id error");
         return eRTU_ID_ERROR;
     }
     pRtuPacketHeader_t header = packed(id, eCMD_READ_COILS, temp, sizeof(temp));
@@ -193,7 +194,7 @@ uint8_t ProMake_Modbus_RTU_Master::readDiscreteInputsRegister(uint8_t id, uint16
     uint8_t ret = 0;
     if ((id == 0) && (id > 0xF7))
     {
-        RTU_DBG("Device id error");
+        PROMAKE_LOGDEBUG3("Device id error");
         return eRTU_ID_ERROR;
     }
     pRtuPacketHeader_t header = packed(id, eCMD_READ_DISCRETE, temp, sizeof(temp));
@@ -217,7 +218,7 @@ uint8_t ProMake_Modbus_RTU_Master::readHoldingRegister(uint8_t id, uint16_t reg,
     uint8_t ret = 0;
     if ((id == 0) && (id > 0xF7))
     {
-        RTU_DBG("Device id error");
+        PROMAKE_LOGDEBUG3("Device id error");
         return eRTU_ID_ERROR;
     }
     pRtuPacketHeader_t header = packed(id, eCMD_READ_HOLDING, temp, sizeof(temp));
@@ -239,7 +240,7 @@ uint8_t ProMake_Modbus_RTU_Master::readInputRegister(uint8_t id, uint16_t reg, v
     uint8_t ret = 0;
     if ((id == 0) && (id > 0xF7))
     {
-        RTU_DBG("Device id error");
+        PROMAKE_LOGDEBUG3("Device id error");
         return eRTU_ID_ERROR;
     }
     pRtuPacketHeader_t header = packed(id, eCMD_READ_INPUT, temp, sizeof(temp));
@@ -251,7 +252,7 @@ uint8_t ProMake_Modbus_RTU_Master::readInputRegister(uint8_t id, uint16_t reg, v
             memcpy(data, (uint8_t *)&(header->payload[1]), size);
         free(header);
     }
-    RTU_DBG(val, HEX);
+    PROMAKE_LOGDEBUG3(val, HEX);
     return ret;
 }
 
@@ -261,7 +262,7 @@ uint8_t ProMake_Modbus_RTU_Master::readHoldingRegister(uint8_t id, uint16_t reg,
     uint8_t ret = 0;
     if ((id == 0) && (id > 0xF7))
     {
-        RTU_DBG("Device id error");
+        PROMAKE_LOGDEBUG3("Device id error");
         return eRTU_ID_ERROR;
     }
     pRtuPacketHeader_t header = packed(id, eCMD_READ_HOLDING, temp, sizeof(temp));
@@ -287,7 +288,7 @@ uint8_t ProMake_Modbus_RTU_Master::readInputRegister(uint8_t id, uint16_t reg, u
     uint8_t ret = 0;
     if ((id == 0) && (id > 0xF7))
     {
-        RTU_DBG("Device id error");
+        PROMAKE_LOGDEBUG3("Device id error");
         return eRTU_ID_ERROR;
     }
     pRtuPacketHeader_t header = packed(id, eCMD_READ_INPUT, temp, sizeof(temp));
@@ -325,7 +326,7 @@ uint8_t ProMake_Modbus_RTU_Master::writeCoilsRegister(uint8_t id, uint16_t reg, 
     uint8_t ret = 0;
     if (id > 0xF7)
     {
-        RTU_DBG("Device id error");
+        PROMAKE_LOGDEBUG3("Device id error");
         return (uint8_t)eRTU_ID_ERROR;
     }
     memcpy(temp + 5, data, size);
@@ -357,7 +358,7 @@ uint8_t ProMake_Modbus_RTU_Master::writeHoldingRegister(uint8_t id, uint16_t reg
     uint8_t ret = 0;
     if (id > 0xF7)
     {
-        RTU_DBG("Device id error");
+        PROMAKE_LOGDEBUG3("Device id error");
         return (uint8_t)eRTU_ID_ERROR;
     }
     memcpy(temp + 5, data, size);
@@ -390,7 +391,7 @@ uint8_t ProMake_Modbus_RTU_Master::writeHoldingRegister(uint8_t id, uint16_t reg
     uint8_t ret = 0;
     if (id > 0xF7)
     {
-        RTU_DBG("Device id error");
+        PROMAKE_LOGDEBUG3("Device id error");
         return (uint8_t)eRTU_ID_ERROR;
     }
     // memcpy(temp+5, data, size);
@@ -424,7 +425,7 @@ ProMake_Modbus_RTU_Master::pRtuPacketHeader_t ProMake_Modbus_RTU_Master::packed(
         return NULL;
     if ((header = (pRtuPacketHeader_t)malloc(sizeof(sRtuPacketHeader_t) + size)) == NULL)
     {
-        RTU_DBG("Memory ERROR");
+        PROMAKE_LOGDEBUG3("Memory ERROR");
         return NULL;
     }
     header->len = sizeof(sRtuPacketHeader_t) + size - 2;
@@ -476,7 +477,7 @@ LOOP:
         if (_s->available())
         {
             head[index++] = (uint8_t)_s->read();
-            RTU_DBG(head[index - 1], HEX);
+            PROMAKE_LOGDEBUG3(head[index - 1], HEX);
             if ((index == 1) && (head[0] != id))
             {
                 index = 0;
@@ -490,15 +491,15 @@ LOOP:
         }
         if ((millis() - time) > _timeout)
         {
-            RTU_DBG("ERROR");
-            RTU_DBG(millis() - time);
+            PROMAKE_LOGDEBUG3("ERROR");
+            PROMAKE_LOGDEBUG3(millis() - time);
             break;
         }
     }
 
     if (index != 4)
     {
-        RTU_DBG();
+        PROMAKE_LOGDEBUG3();
         if (error != NULL)
             *error = eRTU_RECV_ERROR;
         return NULL;
@@ -533,7 +534,7 @@ LOOP:
     }
     if ((header = (pRtuPacketHeader_t)malloc(index + 2)) == NULL)
     {
-        RTU_DBG("Memory ERROR");
+        PROMAKE_LOGDEBUG3("Memory ERROR");
         if (error != NULL)
             *error = eRTU_RECV_ERROR;
         return NULL;
@@ -545,7 +546,7 @@ LOOP:
     time = millis();
     while (remain)
     {
-        RTU_DBG(_s->available());
+        PROMAKE_LOGDEBUG3(_s->available());
         if (_s->available())
         {
             *(header->payload + index) = (uint8_t)_s->read();
@@ -558,7 +559,7 @@ LOOP:
             free(header);
             if (error != NULL)
                 *error = eRTU_RECV_ERROR;
-            RTU_DBG();
+            PROMAKE_LOGDEBUG3();
             return NULL;
         }
     }
@@ -567,7 +568,7 @@ LOOP:
     if (crc != calculateCRC((uint8_t *)&(header->id), (header->len) - 2))
     {
         free(header);
-        RTU_DBG("CRC ERROR");
+        PROMAKE_LOGDEBUG3("CRC ERROR");
         if (error != NULL)
             *error = eRTU_RECV_ERROR;
         return NULL;

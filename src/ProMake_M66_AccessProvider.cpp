@@ -1,5 +1,6 @@
 #include "ProMake_M66_AccessProvider.h"
 #include "ProMake_M66_Modem.h"
+#include <ProMake_debug.h>
 
 #define __TOUTSHUTDOWN__ 5000
 #define __TOUTMODEMCONFIGURATION__ 20000
@@ -17,7 +18,7 @@ ProMake_GSM_NetworkStatus_t ProMakeM66AccessProvider::getStatus() { return _theP
 ProMake_GSM_NetworkStatus_t ProMakeM66AccessProvider::begin(int8_t pwrPin, char *pin, bool restart, bool synchronous)
 {
   // If asked for modem restart, restart
-  Serial.println("Powering ON ...");
+  PROMAKE_LOGDEBUG("Powering ON ...");
   pinMode(pwrPin, OUTPUT);
   // GSM POWER ON
   digitalWrite(pwrPin, LOW);
@@ -26,7 +27,7 @@ ProMake_GSM_NetworkStatus_t ProMakeM66AccessProvider::begin(int8_t pwrPin, char 
   delay(10000);
 
   _theProMakeM66Modem->setStatus(NET_STATUS_IDLE);
-  Serial.println("Powered ON");
+  PROMAKE_LOGDEBUG("Powered ON");
 
   //
   _pin = pin;
@@ -79,7 +80,7 @@ void ProMakeM66AccessProvider::ModemConfigurationContinue()
       if (resp)
       {
         // OK received
-        Serial.println("Modem is responding");
+        PROMAKE_LOGDEBUG("Modem is responding");
         if (_pin && (_pin[0] != 0))
         {
           _theProMakeM66Modem->genericCommand_rqc("AT+CPIN=", false);
@@ -89,8 +90,7 @@ void ProMakeM66AccessProvider::ModemConfigurationContinue()
         }
         else
         {
-          // DEBUG
-          // Serial.println("AT+CGREG?");
+          PROMAKE_LOGDEBUG("AT+CGREG?");
           _theProMakeM66Modem->setCommandCounter(4);
           _theProMakeM66Modem->takeMilliseconds();
           retryCnt = 10;
@@ -101,7 +101,7 @@ void ProMakeM66AccessProvider::ModemConfigurationContinue()
       {
         if (_theProMakeM66Modem->takeMilliseconds() > __TOUTMODEMCONFIGURATION__)
         {
-          Serial.println("Error - No Response from modem!");
+          PROMAKE_LOGDEBUG("Error - No Response from modem!");
           _theProMakeM66Modem->closeCommand(CMD_UNEXP);
         }
       }
@@ -138,7 +138,7 @@ void ProMakeM66AccessProvider::ModemConfigurationContinue()
         _theProMakeM66Modem->genericParse_rsp(resp, "+CGREG: 0,2");
         if (resp)
         {
-          Serial.println("Modem is searching");
+          PROMAKE_LOGDEBUG("Modem is searching");
           delay(2000);
           _theProMakeM66Modem->takeMilliseconds();
           _theProMakeM66Modem->genericCommand_rqc("AT+CGREG?");
@@ -148,12 +148,12 @@ void ProMakeM66AccessProvider::ModemConfigurationContinue()
           _theProMakeM66Modem->genericParse_rsp(resp, "+CGREG: 0,0");
           if (resp)
           {
-            Serial.println("register failed");
+            PROMAKE_LOGDEBUG("register failed");
             _theProMakeM66Modem->closeCommand(CMD_UNEXP);
           }
           else if (_theProMakeM66Modem->takeMilliseconds() > __TOUTMODEMCONFIGURATION__ || retryCnt < 0)
           {
-            Serial.println("register timed out");
+            PROMAKE_LOGDEBUG("register timed out");
             _theProMakeM66Modem->closeCommand(CMD_UNEXP);
           }
           else

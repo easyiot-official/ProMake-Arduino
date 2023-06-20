@@ -1,5 +1,5 @@
 #include "ProMake_Relay_2ch.h"
-
+#include "ProMake_debug.h"
 #include <Arduino.h>
 
 ProMake_Relay_2ch::ProMake_Relay_2ch(){
@@ -8,7 +8,7 @@ ProMake_Relay_2ch::ProMake_Relay_2ch(){
 }
 
 ProMake_Relay_2ch::~ProMake_Relay_2ch(){
-	//Serial.println("~ProMake_Relay_2ch");
+	//PROMAKE_LOGDEBUG("~ProMake_Relay_2ch");
 }
 
 void ProMake_Relay_2ch::init(enuProMakeSlot slot){
@@ -26,7 +26,7 @@ void ProMake_Relay_2ch::init(enuProMakeSlot slot){
 		case ARDUINO_NANO_KIT_SLOT3:
 			m_relay1_pin = 2;
 			m_relay2_pin = 14;
-			PROMAKE_LOGERROR("You need to change the state of "INT-SEL" jumper to use Relay 2CH Module in slot 3");
+			PROMAKE_LOGERROR("You need to change the state of \"INT-SEL\" jumper to use Relay 2CH Module in slot 3");
 		break;
 		default:
 			PROMAKE_LOGERROR("INVALID slot for Relay 2CH Module");

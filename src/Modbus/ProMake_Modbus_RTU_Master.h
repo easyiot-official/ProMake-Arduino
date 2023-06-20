@@ -1,5 +1,5 @@
-#ifndef __DFRobot_RTU_H
-#define __DFRobot_RTU_H
+#ifndef PROMAKE_MODBUS_RTU_MASTER_H_INCLUDED
+#define PROMAKE_MODBUS_RTU_MASTER_H_INCLUDED
 
 #if ARDUINO >= 100
 #include "Arduino.h"
@@ -8,13 +8,6 @@
 #endif
 
 #include "ProMake_RS485.h"
-
-//Define RTU_DBG, change 0 to 1 open the RTU_DBG, 1 to 0 to close.  
-#if 0
-#define RTU_DBG(...) {Serial.print("["); Serial.print(__FUNCTION__); Serial.print("(): "); Serial.print(__LINE__); Serial.print(" ] "); Serial.println(__VA_ARGS__);}
-#else
-#define RTU_DBG(...)
-#endif
 
 
 #ifndef RTU_BROADCAST_ADDRESS

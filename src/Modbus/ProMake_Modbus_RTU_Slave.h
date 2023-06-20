@@ -1,5 +1,5 @@
-#ifndef ModbusRTUSlave_h
-#define ModbusRTUSlave_h
+#ifndef PROMAKE_MODBUS_RTU_SLAVE_H_INCLUDED
+#define PROMAKE_MODBUS_RTU_SLAVE_H_INCLUDED
 
 #define NO_DE_PIN 255
 

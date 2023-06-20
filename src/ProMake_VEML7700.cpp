@@ -1,4 +1,5 @@
 #include "ProMake_VEML7700.h"
+#include <ProMake_debug.h>
 
 ProMake_VEML7700::ProMake_VEML7700()
 {
@@ -190,6 +191,7 @@ uint8_t ProMake_VEML7700::getHighThresholdEvent(uint8_t& event)
 {
   uint32_t reg;
   uint8_t status = receiveData(COMMAND_ALS_IF_H, reg);
+  PROMAKE_LOGDEBUG(status);
   event = (reg & ALS_IF_H_MASK) >> ALS_IF_H_SHIFT;
   return status;
 }
@@ -198,6 +200,7 @@ uint8_t ProMake_VEML7700::getLowThresholdEvent(uint8_t& event)
 {
   uint32_t reg;
   uint8_t status = receiveData(COMMAND_ALS_IF_L, reg);
+  PROMAKE_LOGDEBUG(status);
   event = (reg & ALS_IF_L_MASK) >> ALS_IF_L_SHIFT;
   return status;
 }

@@ -1,4 +1,5 @@
 #include "ProMake_SHT20.h"
+#include <ProMake_debug.h>
 
 uint16_t ProMake_SHT20::readValue(byte cmd)
 {
@@ -125,20 +126,20 @@ byte ProMake_SHT20::checkCRC(uint16_t message_from_sensor, uint8_t check_value_f
     return (byte)remainder;
 }
 
-void ProMake_SHT20::showResult(const char *prefix, int val)
+void ProMake_SHT20::showResult(const __FlashStringHelper *prefix, int val)
 {
-    Serial.print(prefix);
+    PROMAKE_LOGDEBUG0(prefix);
     if(val){
-        Serial.println("yes");
+        PROMAKE_LOGDEBUG("yes");
     }else{
-        Serial.println("no");
+        PROMAKE_LOGDEBUG("no");
     }
 }
 
 void ProMake_SHT20::checkSHT20(void)
 {
     byte reg = readUserRegister();
-    showResult("End of battery: ", reg & USER_REGISTER_END_OF_BATTERY);
-    showResult("Heater enabled: ", reg & USER_REGISTER_HEATER_ENABLED);
-    showResult("Disable OTP reload: ", reg & USER_REGISTER_DISABLE_OTP_RELOAD);
+    showResult(F("End of battery: "), reg & USER_REGISTER_END_OF_BATTERY);
+    showResult(F("Heater enabled: "), reg & USER_REGISTER_HEATER_ENABLED);
+    showResult(F("Disable OTP reload: "), reg & USER_REGISTER_DISABLE_OTP_RELOAD);
 }

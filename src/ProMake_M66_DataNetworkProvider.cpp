@@ -1,5 +1,6 @@
 #include "ProMake_M66_DataNetworkProvider.h"
 #include "ProMake_M66_Modem.h"
+#include <ProMake_debug.h>
 
 const char _command_CGATT[] = "AT+CGATT=";
 const char _command_SEPARATOR[] = "\",\"";
@@ -83,8 +84,7 @@ void ProMakeM66DataNetworkProvider::attachGPRSContinue()
             if (resp)
             {
                 // Great. Go for the next step
-                // DEBUG
-                // Serial.println("AT+QICSGP.");
+                PROMAKE_LOGDEBUG("AT+QICSGP.");
                 _theProMakeM66Modem->genericCommand_rqc("AT+QICSGP=1,\"", false);
                 _theProMakeM66Modem->print(_apn);
                 _theProMakeM66Modem->genericCommand_rqc(_command_SEPARATOR, false);

@@ -35,7 +35,7 @@ public:
     void setResolution(byte resBits);
     void writeUserRegister(byte val);
 
-    void showResult(const char *prefix, int val);
+    void showResult(const __FlashStringHelper *prefix, int val);
     float readHumidity(void);
     float readTemperatureC(void);
     float readTemperatureF(void);
