@@ -9,6 +9,7 @@ ProMake_MQ2::ProMake_MQ2(int pin)
 
 void ProMake_MQ2::begin()
 {
+    pinMode(_pin, INPUT);
     Ro = MQCalibration();
     Serial.print("Ro: ");
     Serial.print(Ro);
