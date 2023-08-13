@@ -1,21 +1,39 @@
 #include "ProMake_DHT11.h"
 #include <ProMake_debug.h>
+#include <ProMake_Core.h>
 
 bool ProMake_DHT11::read(int pin)
 {
 	uint8_t bits[5];
 	uint8_t cnt = 7;
 	uint8_t idx = 0;
-	for (int i = 0; i < 5; i++)
-		bits[i] = 0;
-	delay(200);
+	// Reset 40 bits of received data to zero.
+	bits[0] = bits[1] = bits[2] = bits[3] = bits[4] = 0;
+
+#if defined(ESP8266) || defined(ESP32)
+	yield(); // Handle WiFi / reset software watchdog
+#endif
+
+	// Send start signal.  See DHT datasheet for full signal diagram:
+
+	// Go into high impedence state to let pull-up raise data line level and
+	// start the reading process.
+	pinMode(pin, INPUT_PULLUP);
+	delay(1);
+
+	// First set data line low for a period according to sensor type
 	pinMode(pin, OUTPUT);
-	digitalWrite(pin, LOW); // sending start
-	delay(18);
-	digitalWrite(pin, HIGH); // waiting for sensor response
-	delayMicroseconds(40);
 	digitalWrite(pin, LOW);
-	pinMode(pin, INPUT);
+	delay(20); // data sheet says at least 18ms, 20ms just to be safe
+
+	// End the start signal by setting data line high for 40 microseconds.
+	pinMode(pin, INPUT_PULLUP);
+	delayMicroseconds(40);
+
+	// Turn off interrupts temporarily because the next sections
+	// are timing critical and we don't want any interruptions.
+	InterruptLock lock;
+
 	// wating for get ready response
 	unsigned int loopCnt = 10000;
 	while (digitalRead(pin) == LOW)

@@ -44,7 +44,7 @@ void ProMake_CoreClass::write16(byte device, byte reg, uint16_t value)
 	// Wire.write(0xFF & (value >> 0));
 	// Wire.write(0xFF & (value << 8));
 	Wire.write(value >> 0);
-	Wire.write(value << 8);
+	Wire.write(value >> 8);
 	Wire.endTransmission();
 }
 

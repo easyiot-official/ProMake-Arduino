@@ -66,6 +66,24 @@ class ProMake_CoreClass{
 		bool		ping(byte device);
 };
 
+/*!
+ *  @brief  Class that defines Interrupt Lock Avaiability
+ */
+class InterruptLock {
+public:
+  InterruptLock() {
+#if !defined(ARDUINO_ARCH_NRF52)
+    noInterrupts();
+#endif
+  }
+  ~InterruptLock() {
+#if !defined(ARDUINO_ARCH_NRF52)
+    interrupts();
+#endif
+  }
+};
+
+
 extern ProMake_CoreClass ProMakeCore;
 // end of header
 #endif
