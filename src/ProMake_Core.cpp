@@ -11,41 +11,78 @@
 /********************************************************
 	Writes an 8 bit value over I2C
 *********************************************************/
-void ProMake_CoreClass::write8(byte device, byte reg, byte value)
+bool ProMake_CoreClass::write8(byte device, byte reg, byte value)
 {
 	Wire.beginTransmission((uint8_t)device);
-	Wire.write((uint8_t)reg);
-	Wire.write((uint8_t)value);
-	Wire.endTransmission();
+	if (Wire.write((uint8_t)reg) != 1)
+	{
+		return false;
+	}
+	if (Wire.write((uint8_t)value) != 1)
+	{
+		return false;
+	}
+	if (Wire.endTransmission())
+	{
+		return false;
+	}
+	return true;
 }
 
 /********************************************************
 	Writes over I2C
 *********************************************************/
-void ProMake_CoreClass::write(byte value)
+bool ProMake_CoreClass::write(byte value)
 {
-	Wire.write((uint8_t)value);
+	if (Wire.write((uint8_t)value) != 1)
+	{
+		return false;
+	}
+	return true;
 }
 
-void ProMake_CoreClass::write1(byte device, byte value)
+bool ProMake_CoreClass::write1(byte device, byte value)
 {
 	Wire.beginTransmission((uint8_t)device);
-	Wire.write((uint8_t)value);
-	Wire.endTransmission();
+	if (Wire.write((uint8_t)value) != 1)
+	{
+		return false;
+	}
+	if (Wire.endTransmission())
+	{
+		return false;
+	}
+	return true;
 }
 
 /********************************************************
 	Writes an 16 bit value over I2C
 *********************************************************/
-void ProMake_CoreClass::write16(byte device, byte reg, uint16_t value)
+bool ProMake_CoreClass::write16(byte device, byte reg, uint16_t value)
 {
 	Wire.beginTransmission((uint8_t)device);
-	Wire.write((uint8_t)reg);
+
+	if (Wire.write((uint8_t)reg) != 1)
+	{
+		return false;
+	}
 	// Wire.write(0xFF & (value >> 0));
 	// Wire.write(0xFF & (value << 8));
-	Wire.write(value >> 0);
-	Wire.write(value >> 8);
-	Wire.endTransmission();
+
+	if (Wire.write(value >> 0) != 1)
+	{
+		return false;
+	}
+
+	if (Wire.write(value >> 8) != 1)
+	{
+		return false;
+	}
+	if (Wire.endTransmission())
+	{
+		return false;
+	}
+	return true;
 }
 
 /********************************************************
@@ -65,75 +102,112 @@ uint8_t ProMake_CoreClass::readStream(byte device)
 /********************************************************
 	Reads an 8 bit value over I2C
 *********************************************************/
-uint8_t ProMake_CoreClass::read8(byte device, byte reg)
+bool ProMake_CoreClass::read8(byte device, byte reg, byte &value)
 {
-	uint8_t value = 0;
 	Wire.beginTransmission((uint8_t)device);
-	Wire.write((uint8_t)reg);
-	Wire.endTransmission();
-	Wire.requestFrom((uint8_t)device, (uint8_t)1);
+	if (Wire.write((uint8_t)reg) != 1)
+	{
+		return false;
+	}
+	if (Wire.endTransmission())
+	{
+		return false;
+	}
+	if (Wire.requestFrom((uint8_t)device, (uint8_t)1) != 1)
+	{
+		return false;
+	}
 	if (Wire.available())
 	{
 		value = Wire.read();
+		return true;
 	}
-	return value;
+	return false;
 }
-
 /********************************************************
 	Reads an 16 bit value over I2C
 *********************************************************/
-uint16_t ProMake_CoreClass::read16(byte device, byte reg)
+bool ProMake_CoreClass::read16(byte device, byte reg, uint16_t &value)
 {
-	uint16_t value = 0;
 	Wire.beginTransmission((uint8_t)device);
-	Wire.write((uint8_t)reg);
-	Wire.endTransmission();
-	Wire.requestFrom((uint8_t)device, (uint8_t)2);
+	if (Wire.write((uint8_t)reg) != 1)
+	{
+		return false;
+	}
+	if (Wire.endTransmission())
+	{
+		return false;
+	}
+	if (Wire.requestFrom((uint8_t)device, (uint8_t)2) != 2)
+	{
+		return false;
+	}
 	if (Wire.available())
 	{
 		value = Wire.read();
 		value <<= 8;
 		value |= Wire.read();
+		return true;
 	}
-	return value;
+	return false;
 }
 
-uint16_t ProMake_CoreClass::read16(byte device, byte reg, byte sendStop)
+bool ProMake_CoreClass::read16(byte device, byte reg, bool sendStop, uint16_t &value)
 {
-	uint16_t value = 0;
 	Wire.beginTransmission((uint8_t)device);
-	Wire.write((uint8_t)reg);
-	Wire.endTransmission(sendStop);
-	Wire.requestFrom((uint8_t)device, (uint8_t)2);
+	if (Wire.write((uint8_t)reg) != 1)
+	{
+		return false;
+	}
+	if (Wire.endTransmission(sendStop))
+	{
+		return false;
+	}
+	if (Wire.requestFrom((uint8_t)device, (uint8_t)2) != 2)
+	{
+		return false;
+	}
+
 	if (Wire.available())
 	{
 		value = Wire.read();
 		value <<= 8;
 		value |= Wire.read();
+		return true;
 	}
-	return value;
+	return false;
 }
 
-int16_t ProMake_CoreClass::readS16(byte device, byte reg)
+bool ProMake_CoreClass::readS16(byte device, byte reg, int16_t &value)
 {
-	return (int16_t)read16(device, reg);
+	return read16(device, reg, (uint16_t &)value);
 }
 
-int16_t ProMake_CoreClass::readS16_LE(byte device, byte reg)
+bool ProMake_CoreClass::readS16_LE(byte device, byte reg, int16_t &value)
 {
-	return (int16_t)read16_LE(device, reg);
+	return read16_LE(device, reg, (uint16_t &)value);
 }
 
-uint16_t ProMake_CoreClass::read16_LE(byte device, byte reg)
+bool ProMake_CoreClass::read16_LE(byte device, byte reg, uint16_t &value)
 {
-	uint16_t temp = read16(device, reg);
-	return (temp >> 8) | (temp << 8);
+	uint16_t temp = 0;
+	if (read16(device, reg, temp))
+	{
+		value = (temp >> 8) | (temp << 8);
+		return true;
+	}
+	return false;
 }
 
-uint16_t ProMake_CoreClass::read16_LE(byte device, byte reg, byte sendStop)
+bool ProMake_CoreClass::read16_LE(byte device, byte reg, bool sendStop, uint16_t &value)
 {
-	uint16_t temp = read16(device, reg, sendStop);
-	return (temp >> 8) | (temp << 8);
+	uint16_t temp = 0;
+	if (read16(device, reg, sendStop, temp))
+	{
+		value = (temp >> 8) | (temp << 8);
+		return true;
+	}
+	return false;
 }
 
 uint8_t ProMake_CoreClass::request8(byte device)
