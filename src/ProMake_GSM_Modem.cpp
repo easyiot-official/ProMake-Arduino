@@ -1,6 +1,6 @@
-#include "ProMake_M66_Modem.h"
+#include "ProMake_GSM_Modem.h"
 
-ProMake_M66_Modem::ProMake_M66_Modem(HardwareSerial &serial, bool debug) : m_serial(serial), cb(this)
+ProMake_GSM_Modem::ProMake_GSM_Modem(HardwareSerial &serial, bool debug) : m_serial(serial), cb(this)
 {
   _commandError = CMD_OK;
   _commandCounter = 0;
@@ -10,7 +10,7 @@ ProMake_M66_Modem::ProMake_M66_Modem(HardwareSerial &serial, bool debug) : m_ser
     _UMProvider[i] = 0;
 }
 
-void ProMake_M66_Modem::registerUMProvider(ProMakeGsmProviderBase *provider)
+void ProMake_GSM_Modem::registerUMProvider(ProMakeGsmProviderBase *provider)
 {
   for (int i = 0; i < UMPROVIDERS; i++)
   {
@@ -22,7 +22,7 @@ void ProMake_M66_Modem::registerUMProvider(ProMakeGsmProviderBase *provider)
   }
 }
 
-void ProMake_M66_Modem::unRegisterUMProvider(ProMakeGsmProviderBase *provider)
+void ProMake_GSM_Modem::unRegisterUMProvider(ProMakeGsmProviderBase *provider)
 {
   for (int i = 0; i < UMPROVIDERS; i++)
   {
@@ -34,7 +34,7 @@ void ProMake_M66_Modem::unRegisterUMProvider(ProMakeGsmProviderBase *provider)
   }
 }
 
-unsigned long ProMake_M66_Modem::takeMilliseconds()
+unsigned long ProMake_GSM_Modem::takeMilliseconds()
 {
   unsigned long now = millis();
   unsigned long delta;
@@ -43,7 +43,7 @@ unsigned long ProMake_M66_Modem::takeMilliseconds()
   return delta;
 }
 
-void ProMake_M66_Modem::openCommand(ProMakeGsmProviderBase *provider, ProMake_GSM_commandType_e c)
+void ProMake_GSM_Modem::openCommand(ProMakeGsmProviderBase *provider, ProMake_GSM_commandType_e c)
 {
   _activeProvider = provider;
   _commandError = CMD_ONGOING;
@@ -53,7 +53,7 @@ void ProMake_M66_Modem::openCommand(ProMakeGsmProviderBase *provider, ProMake_GS
   //_dataInBufferTo=0;
 };
 
-void ProMake_M66_Modem::closeCommand(ProMake_GSM_CommandError_t code)
+void ProMake_GSM_Modem::closeCommand(ProMake_GSM_CommandError_t code)
 {
   // If we were configuring the modem,
   // and there's been an error
@@ -68,7 +68,7 @@ void ProMake_M66_Modem::closeCommand(ProMake_GSM_CommandError_t code)
 }
 
 // Response parse.
-bool ProMake_M66_Modem::genericParse_rsp(bool &rsp, const char *string, const char *string2)
+bool ProMake_GSM_Modem::genericParse_rsp(bool &rsp, const char *string, const char *string2)
 {
   if ((string == 0) && (string2 == 0))
     string = "OK";
@@ -82,7 +82,7 @@ bool ProMake_M66_Modem::genericParse_rsp(bool &rsp, const char *string, const ch
 }
 
 // Generic command (const string).
-void ProMake_M66_Modem::genericCommand_rqc(const char *str, bool addCR)
+void ProMake_GSM_Modem::genericCommand_rqc(const char *str, bool addCR)
 {
   cb.flush();
   m_serial.print(str);
@@ -91,7 +91,7 @@ void ProMake_M66_Modem::genericCommand_rqc(const char *str, bool addCR)
     m_serial.print("\r");
 }
 
-void ProMake_M66_Modem::recv()
+void ProMake_GSM_Modem::recv()
 {
   while (m_serial.available())
   {
@@ -101,7 +101,7 @@ void ProMake_M66_Modem::recv()
   return;
 }
 
-void ProMake_M66_Modem::parseResp()
+void ProMake_GSM_Modem::parseResp()
 {
   cb.debugBuffer();
   bool recognized = false;
@@ -116,7 +116,7 @@ void ProMake_M66_Modem::parseResp()
 }
 
 
-size_t ProMake_M66_Modem::write(uint8_t c)
+size_t ProMake_GSM_Modem::write(uint8_t c)
 {
 	//if(_debug)
 	//	GSM3CircularBuffer::printCharDebug(c);

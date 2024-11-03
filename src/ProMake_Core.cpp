@@ -210,10 +210,10 @@ bool ProMake_CoreClass::read16_LE(byte device, byte reg, bool sendStop, uint16_t
 	return false;
 }
 
-uint8_t ProMake_CoreClass::request8(byte device)
+uint8_t ProMake_CoreClass::request8(byte device, bool sendStop)
 {
 	uint8_t value = 0;
-	Wire.requestFrom((uint8_t)device, (uint8_t)1);
+	Wire.requestFrom((uint8_t)device, (size_t)1, sendStop);
 	if (Wire.available())
 	{
 		value = Wire.read();
@@ -221,10 +221,10 @@ uint8_t ProMake_CoreClass::request8(byte device)
 	return value;
 }
 
-uint16_t ProMake_CoreClass::request16(byte device)
+uint16_t ProMake_CoreClass::request16(byte device, bool sendStop)
 {
 	uint16_t value = 0;
-	Wire.requestFrom((uint8_t)device, (uint8_t)2);
+	Wire.requestFrom((uint8_t)device, (size_t)2, sendStop);
 	if (Wire.available())
 	{
 		value = Wire.read();

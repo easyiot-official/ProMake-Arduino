@@ -9,7 +9,7 @@
 
 #define UMPROVIDERS 3
 
-class ProMake_M66_Modem : public ProMake_CircularBufferManager, public Print
+class ProMake_GSM_Modem : public ProMake_CircularBufferManager, public Print
 {
 private:
     ProMake_CircularBuffer cb;
@@ -38,7 +38,7 @@ private:
 
 public:
     /** Constructor **/
-    ProMake_M66_Modem(HardwareSerial &serial, bool debug = false);
+    ProMake_GSM_Modem(HardwareSerial &serial, bool debug = false);
 
     /** Get command error
         @return command error
