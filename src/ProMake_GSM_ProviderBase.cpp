@@ -1,7 +1,7 @@
 #include "ProMake_GSM_ProviderBase.h"
-#include "ProMake_M66_Modem.h"
+#include "ProMake_GSM_Modem.h"
 
-ProMakeGsmProviderBase::ProMakeGsmProviderBase(ProMake_M66_Modem *Modem) : _theProMakeM66Modem(Modem)
+ProMakeGsmProviderBase::ProMakeGsmProviderBase(ProMake_GSM_Modem *Modem) : _theProMakeGsmModem(Modem)
 {
 }
 
@@ -10,7 +10,7 @@ ProMakeGsmProviderBase::ProMakeGsmProviderBase(ProMake_M66_Modem *Modem) : _theP
 // >1 if error
 int ProMakeGsmProviderBase::ready()
 {
-	//_theProMakeM66Modem->manageReceivedData();
+	//_theProMakeGsmModem->manageReceivedData();
 
-	return _theProMakeM66Modem->getCommandError();
+	return _theProMakeGsmModem->getCommandError();
 };

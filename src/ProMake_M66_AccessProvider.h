@@ -45,7 +45,7 @@ public:
         @param debug		Determines debug mode
      */
 
-    ProMakeM66AccessProvider(ProMake_M66_Modem *Modem, bool debug = false);
+    ProMakeM66AccessProvider(ProMake_GSM_Modem *Modem, bool debug = false);
 
     /** Start the GSM/GPRS modem, attaching to the GSM network
         @param pin 			SIM PIN number (4 digits in a string, example: "1234"). If

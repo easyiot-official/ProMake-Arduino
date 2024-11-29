@@ -100,8 +100,9 @@ uint16_t ProMake_Modbus_RTU_Master::readInputRegister(uint8_t id, uint16_t reg)
     PROMAKE_LOGDEBUG3(header->len, HEX);
     PROMAKE_LOGDEBUG3(header->id, HEX);
     PROMAKE_LOGDEBUG3(header->cmd, HEX);
-    for (uint8_t i = 0; i < sizeof(temp) + 2; i++)
+    for (uint8_t i = 0; i < sizeof(temp) + 2; i++){
         PROMAKE_LOGDEBUG3(header->payload[i], HEX);
+    }
     sendPackage(header);
     header = recvAndParsePackage(id, (uint8_t)eCMD_READ_INPUT, 2, &ret);
     if ((ret == 0) && (header != NULL))
@@ -252,7 +253,6 @@ uint8_t ProMake_Modbus_RTU_Master::readInputRegister(uint8_t id, uint16_t reg, v
             memcpy(data, (uint8_t *)&(header->payload[1]), size);
         free(header);
     }
-    PROMAKE_LOGDEBUG3(val, HEX);
     return ret;
 }
 

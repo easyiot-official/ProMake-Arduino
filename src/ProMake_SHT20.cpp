@@ -100,8 +100,8 @@ float ProMake_SHT20::dew_pointF()
 void ProMake_SHT20::setResolution(byte resolution)
 {
     byte userRegister = readUserRegister();
-    userRegister &= B01111110;
-    resolution &= B10000001;
+    userRegister &= 0b01111110;
+    resolution &= 0b10000001;
     userRegister |= resolution;
     writeUserRegister(userRegister);
 }

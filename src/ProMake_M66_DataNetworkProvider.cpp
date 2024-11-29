@@ -1,14 +1,14 @@
 #include "ProMake_M66_DataNetworkProvider.h"
-#include "ProMake_M66_Modem.h"
+#include "ProMake_GSM_Modem.h"
 #include <ProMake_debug.h>
 
 const char _command_CGATT[] = "AT+CGATT=";
 const char _command_SEPARATOR[] = "\",\"";
 
 #define __TOUTGPRS__ 5000
-ProMakeM66DataNetworkProvider::ProMakeM66DataNetworkProvider(ProMake_M66_Modem *Modem) : ProMakeGsmProviderBase(Modem)
+ProMakeM66DataNetworkProvider::ProMakeM66DataNetworkProvider(ProMake_GSM_Modem *Modem) : ProMakeGsmProviderBase(Modem)
 {
-    _theProMakeM66Modem->registerUMProvider(this);
+    _theProMakeGsmModem->registerUMProvider(this);
 }
 // Attach GPRS main function.
 ProMake_GSM_NetworkStatus_t ProMakeM66DataNetworkProvider::attachGPRS(char *apn, char *user_name, char *password, bool synchronous)
@@ -17,8 +17,8 @@ ProMake_GSM_NetworkStatus_t ProMakeM66DataNetworkProvider::attachGPRS(char *apn,
     _user = user_name;
     _passwd = password;
 
-    _theProMakeM66Modem->openCommand(this, ATTACHGPRS);
-    _theProMakeM66Modem->setStatus(NET_STATUS_CONNECTING);
+    _theProMakeGsmModem->openCommand(this, ATTACHGPRS);
+    _theProMakeGsmModem->setStatus(NET_STATUS_CONNECTING);
 
     attachGPRSContinue();
 
@@ -31,7 +31,7 @@ ProMake_GSM_NetworkStatus_t ProMakeM66DataNetworkProvider::attachGPRS(char *apn,
             delay(100);
     }
 
-    return _theProMakeM66Modem->getStatus();
+    return _theProMakeGsmModem->getStatus();
 }
 
 // Atthach GPRS continue function.
@@ -48,137 +48,137 @@ void ProMakeM66DataNetworkProvider::attachGPRSContinue()
     // 9: Wait for Register OK and Activate FGCNT "AT+QIACT"
     // 10: Wait for activate OK
 
-    int ct = _theProMakeM66Modem->getCommandCounter();
+    int ct = _theProMakeGsmModem->getCommandCounter();
     if (ct == 1)
     {
         // AT+CGATT
-        _theProMakeM66Modem->genericCommand_rqc(_command_CGATT, false);
-        _theProMakeM66Modem->print(1);
-        _theProMakeM66Modem->print('\r');
-        _theProMakeM66Modem->setCommandCounter(2);
-        _theProMakeM66Modem->takeMilliseconds();
+        _theProMakeGsmModem->genericCommand_rqc(_command_CGATT, false);
+        _theProMakeGsmModem->print(1);
+        _theProMakeGsmModem->print('\r');
+        _theProMakeGsmModem->setCommandCounter(2);
+        _theProMakeGsmModem->takeMilliseconds();
     }
     else if (ct == 2)
     {
-        if (_theProMakeM66Modem->genericParse_rsp(resp))
+        if (_theProMakeGsmModem->genericParse_rsp(resp))
         {
             if (resp)
             {
                 // AT+QIFGCNT
-                _theProMakeM66Modem->genericCommand_rqc("AT+QIFGCNT=0");
-                _theProMakeM66Modem->setCommandCounter(3);
+                _theProMakeGsmModem->genericCommand_rqc("AT+QIFGCNT=0");
+                _theProMakeGsmModem->setCommandCounter(3);
             }
             else
             {
-                if (_theProMakeM66Modem->takeMilliseconds() > __TOUTGPRS__)
+                if (_theProMakeGsmModem->takeMilliseconds() > __TOUTGPRS__)
                 {
-                    _theProMakeM66Modem->closeCommand(CMD_UNEXP);
+                    _theProMakeGsmModem->closeCommand(CMD_UNEXP);
                 }
             }
         }
     }
     else if (ct == 3)
     {
-        if (_theProMakeM66Modem->genericParse_rsp(resp))
+        if (_theProMakeGsmModem->genericParse_rsp(resp))
         {
             if (resp)
             {
                 // Great. Go for the next step
                 PROMAKE_LOGDEBUG("AT+QICSGP.");
-                _theProMakeM66Modem->genericCommand_rqc("AT+QICSGP=1,\"", false);
-                _theProMakeM66Modem->print(_apn);
-                _theProMakeM66Modem->genericCommand_rqc(_command_SEPARATOR, false);
-                _theProMakeM66Modem->print(_user);
-                _theProMakeM66Modem->genericCommand_rqc(_command_SEPARATOR, false);
-                _theProMakeM66Modem->print(_passwd);
-                _theProMakeM66Modem->print("\"\r");
-                _theProMakeM66Modem->setCommandCounter(4);
+                _theProMakeGsmModem->genericCommand_rqc("AT+QICSGP=1,\"", false);
+                _theProMakeGsmModem->print(_apn);
+                _theProMakeGsmModem->genericCommand_rqc(_command_SEPARATOR, false);
+                _theProMakeGsmModem->print(_user);
+                _theProMakeGsmModem->genericCommand_rqc(_command_SEPARATOR, false);
+                _theProMakeGsmModem->print(_passwd);
+                _theProMakeGsmModem->print("\"\r");
+                _theProMakeGsmModem->setCommandCounter(4);
             }
             else
-                _theProMakeM66Modem->closeCommand(CMD_UNEXP);
+                _theProMakeGsmModem->closeCommand(CMD_UNEXP);
         }
     }
     else if (ct == 4)
     {
-        if (_theProMakeM66Modem->genericParse_rsp(resp))
+        if (_theProMakeGsmModem->genericParse_rsp(resp))
         {
             if (resp)
             {
                 // AT+QIMUX=1 for multisocket
-                _theProMakeM66Modem->genericCommand_rqc("AT+QIMUX=0");
-                _theProMakeM66Modem->setCommandCounter(5);
+                _theProMakeGsmModem->genericCommand_rqc("AT+QIMUX=0");
+                _theProMakeGsmModem->setCommandCounter(5);
             }
             else
-                _theProMakeM66Modem->closeCommand(CMD_UNEXP);
+                _theProMakeGsmModem->closeCommand(CMD_UNEXP);
         }
     }
     else if (ct == 5)
     {
-        if (_theProMakeM66Modem->genericParse_rsp(resp))
+        if (_theProMakeGsmModem->genericParse_rsp(resp))
         {
             if (resp)
             {
                 // AT+QIMODE=0 for multisocket
-                _theProMakeM66Modem->genericCommand_rqc("AT+QIMODE=1");
-                _theProMakeM66Modem->setCommandCounter(6);
+                _theProMakeGsmModem->genericCommand_rqc("AT+QIMODE=1");
+                _theProMakeGsmModem->setCommandCounter(6);
             }
             else
-                _theProMakeM66Modem->closeCommand(CMD_UNEXP);
+                _theProMakeGsmModem->closeCommand(CMD_UNEXP);
         }
     }
     else if (ct == 6)
     {
-        if (_theProMakeM66Modem->genericParse_rsp(resp))
+        if (_theProMakeGsmModem->genericParse_rsp(resp))
         {
             if (resp)
             {
                 // AT+QINDI=1
-                _theProMakeM66Modem->genericCommand_rqc("AT+QINDI=1");
-                _theProMakeM66Modem->setCommandCounter(8);
+                _theProMakeGsmModem->genericCommand_rqc("AT+QINDI=1");
+                _theProMakeGsmModem->setCommandCounter(8);
             }
             else
-                _theProMakeM66Modem->closeCommand(CMD_UNEXP);
+                _theProMakeGsmModem->closeCommand(CMD_UNEXP);
         }
     }
     else if (ct == 8)
     {
-        if (_theProMakeM66Modem->genericParse_rsp(resp))
+        if (_theProMakeGsmModem->genericParse_rsp(resp))
         {
             if (resp)
             {
                 // AT+QIREGAPP
-                _theProMakeM66Modem->genericCommand_rqc("AT+QIREGAPP");
-                _theProMakeM66Modem->setCommandCounter(9);
+                _theProMakeGsmModem->genericCommand_rqc("AT+QIREGAPP");
+                _theProMakeGsmModem->setCommandCounter(9);
             }
             else
-                _theProMakeM66Modem->closeCommand(CMD_UNEXP);
+                _theProMakeGsmModem->closeCommand(CMD_UNEXP);
         }
     }
     else if (ct == 9)
     {
-        if (_theProMakeM66Modem->genericParse_rsp(resp))
+        if (_theProMakeGsmModem->genericParse_rsp(resp))
         {
             if (resp)
             {
                 // AT+QIACT
-                _theProMakeM66Modem->genericCommand_rqc("AT+QIACT");
-                _theProMakeM66Modem->setCommandCounter(10);
+                _theProMakeGsmModem->genericCommand_rqc("AT+QIACT");
+                _theProMakeGsmModem->setCommandCounter(10);
             }
             else
-                _theProMakeM66Modem->closeCommand(CMD_UNEXP);
+                _theProMakeGsmModem->closeCommand(CMD_UNEXP);
         }
     }
     else if (ct == 10)
     {
-        if (_theProMakeM66Modem->genericParse_rsp(resp))
+        if (_theProMakeGsmModem->genericParse_rsp(resp))
         {
             if (resp)
             {
-                _theProMakeM66Modem->setStatus(NET_STATUS_GPRS_READY);
-                _theProMakeM66Modem->closeCommand(CMD_OK);
+                _theProMakeGsmModem->setStatus(NET_STATUS_GPRS_READY);
+                _theProMakeGsmModem->closeCommand(CMD_OK);
             }
             else
-                _theProMakeM66Modem->closeCommand(CMD_UNEXP);
+                _theProMakeGsmModem->closeCommand(CMD_UNEXP);
         }
     }
 }
@@ -186,8 +186,8 @@ void ProMakeM66DataNetworkProvider::attachGPRSContinue()
 // Detach GPRS main function.
 ProMake_GSM_NetworkStatus_t ProMakeM66DataNetworkProvider::detachGPRS(bool synchronous)
 {
-    _theProMakeM66Modem->openCommand(this, DETACHGPRS);
-    _theProMakeM66Modem->setStatus(NET_STATUS_CONNECTING);
+    _theProMakeGsmModem->openCommand(this, DETACHGPRS);
+    _theProMakeGsmModem->setStatus(NET_STATUS_CONNECTING);
     detachGPRSContinue();
 
     if (synchronous)
@@ -197,7 +197,7 @@ ProMake_GSM_NetworkStatus_t ProMakeM66DataNetworkProvider::detachGPRS(bool synch
             delay(100);
     }
 
-    return _theProMakeM66Modem->getStatus();
+    return _theProMakeGsmModem->getStatus();
 }
 
 void ProMakeM66DataNetworkProvider::detachGPRSContinue()
@@ -207,47 +207,47 @@ void ProMakeM66DataNetworkProvider::detachGPRSContinue()
     // 2: Wait dettach +PDP DEACT
     // 3: Wait for OK
 
-    switch (_theProMakeM66Modem->getCommandCounter())
+    switch (_theProMakeGsmModem->getCommandCounter())
     {
     case 1:
         // AT+CGATT=0
-        _theProMakeM66Modem->genericCommand_rqc(_command_CGATT, false);
-        _theProMakeM66Modem->print(0);
-        _theProMakeM66Modem->print('\r');
-        _theProMakeM66Modem->setCommandCounter(2);
+        _theProMakeGsmModem->genericCommand_rqc(_command_CGATT, false);
+        _theProMakeGsmModem->print(0);
+        _theProMakeGsmModem->print('\r');
+        _theProMakeGsmModem->setCommandCounter(2);
         break;
     case 2:
-        if (_theProMakeM66Modem->theBuffer().locate("+PDP DEACT"))
+        if (_theProMakeGsmModem->theBuffer().locate("+PDP DEACT"))
         {
             if (resp)
             {
                 // Received +PDP DEACT;
-                _theProMakeM66Modem->setCommandCounter(3);
+                _theProMakeGsmModem->setCommandCounter(3);
             }
             else
-                _theProMakeM66Modem->closeCommand(CMD_UNEXP);
+                _theProMakeGsmModem->closeCommand(CMD_UNEXP);
         }
         break;
     case 3:
-        if (_theProMakeM66Modem->genericParse_rsp(resp))
+        if (_theProMakeGsmModem->genericParse_rsp(resp))
         {
             // OK received
             if (resp)
             {
-                _theProMakeM66Modem->setStatus(NET_STATUS_GSM_READY);
-                _theProMakeM66Modem->closeCommand(CMD_OK);
+                _theProMakeGsmModem->setStatus(NET_STATUS_GSM_READY);
+                _theProMakeGsmModem->closeCommand(CMD_OK);
             }
             else
-                _theProMakeM66Modem->closeCommand(CMD_UNEXP);
+                _theProMakeGsmModem->closeCommand(CMD_UNEXP);
         }
-        _theProMakeM66Modem->theBuffer().flush();
+        _theProMakeGsmModem->theBuffer().flush();
         break;
     }
 }
 
 int ProMakeM66DataNetworkProvider::getLocation(char *country, char *network, char *area, char *cell)
 {
-    if ((_theProMakeM66Modem->getStatus() != NET_STATUS_GSM_READY) && (_theProMakeM66Modem->getStatus() != NET_STATUS_GPRS_READY))
+    if ((_theProMakeGsmModem->getStatus() != NET_STATUS_GSM_READY) && (_theProMakeGsmModem->getStatus() != NET_STATUS_GPRS_READY))
         return 2;
 
     countryCode = country;
@@ -255,85 +255,85 @@ int ProMakeM66DataNetworkProvider::getLocation(char *country, char *network, cha
     locationArea = area;
     cellId = cell;
 
-    _theProMakeM66Modem->openCommand(this, GETLOCATION);
+    _theProMakeGsmModem->openCommand(this, GETLOCATION);
     getLocationContinue();
 
     unsigned long timeOut = millis();
     while (((millis() - timeOut) < 5000) & (ready() == 0))
         ;
 
-    return _theProMakeM66Modem->getCommandError();
+    return _theProMakeGsmModem->getCommandError();
 }
 
 void ProMakeM66DataNetworkProvider::getLocationContinue()
 {
     bool resp;
 
-    switch (_theProMakeM66Modem->getCommandCounter())
+    switch (_theProMakeGsmModem->getCommandCounter())
     {
     case 1:
         delay(3000);
-        _theProMakeM66Modem->setCommandCounter(2);
-        _theProMakeM66Modem->genericCommand_rqc("AT+QENG=1", false);
-        _theProMakeM66Modem->print("\r");
+        _theProMakeGsmModem->setCommandCounter(2);
+        _theProMakeGsmModem->genericCommand_rqc("AT+QENG=1", false);
+        _theProMakeGsmModem->print("\r");
         break;
     case 2:
-        if (_theProMakeM66Modem->genericParse_rsp(resp))
+        if (_theProMakeGsmModem->genericParse_rsp(resp))
         {
             delay(3000);
-            _theProMakeM66Modem->setCommandCounter(3);
-            _theProMakeM66Modem->genericCommand_rqc("AT+QENG?", false);
-            _theProMakeM66Modem->print("\r");
+            _theProMakeGsmModem->setCommandCounter(3);
+            _theProMakeGsmModem->genericCommand_rqc("AT+QENG?", false);
+            _theProMakeGsmModem->print("\r");
         }
         else
-            _theProMakeM66Modem->closeCommand(CMD_UNEXP);
+            _theProMakeGsmModem->closeCommand(CMD_UNEXP);
         break;
     case 3:
         if (resp)
         {
             parseQENG_available(resp);
-            _theProMakeM66Modem->closeCommand(CMD_OK);
+            _theProMakeGsmModem->closeCommand(CMD_OK);
         }
         else
-            _theProMakeM66Modem->closeCommand(CMD_ERROR);
+            _theProMakeGsmModem->closeCommand(CMD_ERROR);
         break;
     }
 }
 
 int ProMakeM66DataNetworkProvider::getICCID(char *iccid)
 {
-    if ((_theProMakeM66Modem->getStatus() != NET_STATUS_GSM_READY) && (_theProMakeM66Modem->getStatus() != NET_STATUS_GPRS_READY))
+    if ((_theProMakeGsmModem->getStatus() != NET_STATUS_GSM_READY) && (_theProMakeGsmModem->getStatus() != NET_STATUS_GPRS_READY))
         return 2;
 
     bufferICCID = iccid;
-    _theProMakeM66Modem->openCommand(this, GETICCID);
+    _theProMakeGsmModem->openCommand(this, GETICCID);
     getICCIDContinue();
 
     unsigned long timeOut = millis();
     while (((millis() - timeOut) < 5000) & (ready() == 0))
         ;
 
-    return _theProMakeM66Modem->getCommandError();
+    return _theProMakeGsmModem->getCommandError();
 }
 
 void ProMakeM66DataNetworkProvider::getICCIDContinue()
 {
     bool resp;
 
-    switch (_theProMakeM66Modem->getCommandCounter())
+    switch (_theProMakeGsmModem->getCommandCounter())
     {
     case 1:
-        _theProMakeM66Modem->setCommandCounter(2);
-        _theProMakeM66Modem->genericCommand_rqc("AT+QCCID");
+        _theProMakeGsmModem->setCommandCounter(2);
+        _theProMakeGsmModem->genericCommand_rqc("AT+QCCID");
         break;
     case 2:
-        if (_theProMakeM66Modem->genericParse_rsp(resp))
+        if (_theProMakeGsmModem->genericParse_rsp(resp))
         {
             parseQCCID_available(resp);
-            _theProMakeM66Modem->closeCommand(CMD_OK);
+            _theProMakeGsmModem->closeCommand(CMD_OK);
         }
         else
-            _theProMakeM66Modem->closeCommand(CMD_ERROR);
+            _theProMakeGsmModem->closeCommand(CMD_ERROR);
         break;
     }
 }
@@ -341,34 +341,34 @@ void ProMakeM66DataNetworkProvider::getICCIDContinue()
 int ProMakeM66DataNetworkProvider::getIMEI(char *imei)
 {
     bufferIMEI = imei;
-    _theProMakeM66Modem->openCommand(this, GETIMEI);
+    _theProMakeGsmModem->openCommand(this, GETIMEI);
     getIMEIContinue();
 
     unsigned long timeOut = millis();
     while (((millis() - timeOut) < 5000) & (ready() == 0))
         ;
 
-    return _theProMakeM66Modem->getCommandError();
+    return _theProMakeGsmModem->getCommandError();
 }
 
 void ProMakeM66DataNetworkProvider::getIMEIContinue()
 {
     bool resp;
 
-    switch (_theProMakeM66Modem->getCommandCounter())
+    switch (_theProMakeGsmModem->getCommandCounter())
     {
     case 1:
-        _theProMakeM66Modem->setCommandCounter(2);
-        _theProMakeM66Modem->genericCommand_rqc("AT+GSN");
+        _theProMakeGsmModem->setCommandCounter(2);
+        _theProMakeGsmModem->genericCommand_rqc("AT+GSN");
         break;
     case 2:
-        if (_theProMakeM66Modem->genericParse_rsp(resp))
+        if (_theProMakeGsmModem->genericParse_rsp(resp))
         {
             parseGSN_available(resp);
-            _theProMakeM66Modem->closeCommand(CMD_OK);
+            _theProMakeGsmModem->closeCommand(CMD_OK);
         }
         else
-            _theProMakeM66Modem->closeCommand(CMD_ERROR);
+            _theProMakeGsmModem->closeCommand(CMD_ERROR);
         break;
     }
 }
@@ -379,7 +379,7 @@ bool ProMakeM66DataNetworkProvider::parseGSN_available(bool &rsp)
     bool imeiFound = false;
     int i = 0;
 
-    while (((c = _theProMakeM66Modem->theBuffer().read()) != 0) & (i < 15))
+    while (((c = _theProMakeGsmModem->theBuffer().read()) != 0) & (i < 15))
     {
         if ((c < 58) & (c > 47))
             imeiFound = true;
@@ -401,7 +401,7 @@ bool ProMakeM66DataNetworkProvider::parseQCCID_available(bool &rsp)
     bool iccidFound = false;
     int i = 0;
 
-    while (((c = _theProMakeM66Modem->theBuffer().read()) != 0) & (i < 20))
+    while (((c = _theProMakeGsmModem->theBuffer().read()) != 0) & (i < 20))
     {
         if ((c < 58) & (c > 47))
             iccidFound = true;
@@ -423,17 +423,17 @@ bool ProMakeM66DataNetworkProvider::parseQENG_available(bool &rsp)
     char location[50] = "";
     int i = 0;
 
-    if (!(_theProMakeM66Modem->theBuffer().chopUntil("+QENG: ", true)))
+    if (!(_theProMakeGsmModem->theBuffer().chopUntil("+QENG: ", true)))
         rsp = false;
     else
         rsp = true;
 
-    if (!(_theProMakeM66Modem->theBuffer().chopUntil("+QENG:", true)))
+    if (!(_theProMakeGsmModem->theBuffer().chopUntil("+QENG:", true)))
         rsp = false;
     else
         rsp = true;
 
-    while (((c = _theProMakeM66Modem->theBuffer().read()) != 0) & (i < 50))
+    while (((c = _theProMakeGsmModem->theBuffer().read()) != 0) & (i < 50))
     {
         location[i] = c;
         i++;
@@ -456,7 +456,7 @@ bool ProMakeM66DataNetworkProvider::parseQENG_available(bool &rsp)
 // Response management.
 void ProMakeM66DataNetworkProvider::manageResponse(byte from, byte to)
 {
-    switch (_theProMakeM66Modem->getOngoingCommand())
+    switch (_theProMakeGsmModem->getOngoingCommand())
     {
     case ATTACHGPRS:
         attachGPRSContinue();
@@ -478,7 +478,7 @@ void ProMakeM66DataNetworkProvider::manageResponse(byte from, byte to)
     }
 }
 
-ProMake_GSM_NetworkStatus_t ProMakeM66DataNetworkProvider::getStatus() { return _theProMakeM66Modem->getStatus(); };
+ProMake_GSM_NetworkStatus_t ProMakeM66DataNetworkProvider::getStatus() { return _theProMakeGsmModem->getStatus(); };
 
 ///////////////////////////////////////////////////////UNSOLICITED RESULT CODE (URC) FUNCTIONS///////////////////////////////////////////////////////////////////
 
@@ -486,10 +486,10 @@ ProMake_GSM_NetworkStatus_t ProMakeM66DataNetworkProvider::getStatus() { return 
 bool ProMakeM66DataNetworkProvider::recognizeUnsolicitedEvent(byte oldTail)
 {
 
-    if (_theProMakeM66Modem->theBuffer().locate("+PDP DEACT"))
+    if (_theProMakeGsmModem->theBuffer().locate("+PDP DEACT"))
     {
-        _theProMakeM66Modem->setStatus(NET_STATUS_GSM_READY);
-        _theProMakeM66Modem->theBuffer().flush();
+        _theProMakeGsmModem->setStatus(NET_STATUS_GSM_READY);
+        _theProMakeGsmModem->theBuffer().flush();
         return true;
     }
 

@@ -1,9 +1,9 @@
 #include "ProMake_M66_MqttClientProvider.h"
-#include "ProMake_M66_Modem.h"
+#include "ProMake_GSM_Modem.h"
 
 #define __TOUTMQTT__ 5000
 
-ProMakeM66MqttClientProvider::ProMakeM66MqttClientProvider(ProMake_M66_Modem *Modem, MQTT_CALLBACK_SIGNATURE) : ProMakeGsmProviderBase(Modem)
+ProMakeM66MqttClientProvider::ProMakeM66MqttClientProvider(ProMake_GSM_Modem *Modem, MQTT_CALLBACK_SIGNATURE) : ProMakeGsmProviderBase(Modem)
 {
     setCallback(callback);
 }
@@ -27,8 +27,8 @@ ProMake_GSM_NetworkStatus_t ProMakeM66MqttClientProvider::connectMqttClient(cons
     _willQoS = willQoS;
     _willRetain = willRetain;
     _keepAliveTime = keepAliveTime;
-    _theProMakeM66Modem->openCommand(this, CONNECTMQTTCLIENT);
-    _theProMakeM66Modem->registerUMProvider(this);
+    _theProMakeGsmModem->openCommand(this, CONNECTMQTTCLIENT);
+    _theProMakeGsmModem->registerUMProvider(this);
     connectMQTTClientContinue();
     // If synchronous, wait till attach is over, or not.
     if (synchronous)
@@ -38,7 +38,7 @@ ProMake_GSM_NetworkStatus_t ProMakeM66MqttClientProvider::connectMqttClient(cons
         while (((millis() - timeOut) < 20000) & (ready() == 0))
             delay(100);
     }
-    return _theProMakeM66Modem->getStatus();
+    return _theProMakeGsmModem->getStatus();
 }
 
 // Connect MQTT continue function.
@@ -54,167 +54,167 @@ void ProMakeM66MqttClientProvider::connectMQTTClientContinue()
     // 6: Open client
     // 7: Connecting
 
-    switch (_theProMakeM66Modem->getCommandCounter())
+    switch (_theProMakeGsmModem->getCommandCounter())
     {
     case 1:
-        _theProMakeM66Modem->genericCommand_rqc("AT+QMTCFG=\"WILL\",0,", false);
-        _theProMakeM66Modem->print(_willFlag);
-        _theProMakeM66Modem->print(',');
-        _theProMakeM66Modem->print(_willQoS);
-        _theProMakeM66Modem->print(',');
-        _theProMakeM66Modem->print(_willRetain);
-        _theProMakeM66Modem->print(',');
-        _theProMakeM66Modem->print('"');
-        _theProMakeM66Modem->print(_willTopic);
-        _theProMakeM66Modem->print('"');
-        _theProMakeM66Modem->print(',');
-        _theProMakeM66Modem->print('"');
-        _theProMakeM66Modem->print(_willPayload);
-        _theProMakeM66Modem->print('"');
-        _theProMakeM66Modem->print('\r');
+        _theProMakeGsmModem->genericCommand_rqc("AT+QMTCFG=\"WILL\",0,", false);
+        _theProMakeGsmModem->print(_willFlag);
+        _theProMakeGsmModem->print(',');
+        _theProMakeGsmModem->print(_willQoS);
+        _theProMakeGsmModem->print(',');
+        _theProMakeGsmModem->print(_willRetain);
+        _theProMakeGsmModem->print(',');
+        _theProMakeGsmModem->print('"');
+        _theProMakeGsmModem->print(_willTopic);
+        _theProMakeGsmModem->print('"');
+        _theProMakeGsmModem->print(',');
+        _theProMakeGsmModem->print('"');
+        _theProMakeGsmModem->print(_willPayload);
+        _theProMakeGsmModem->print('"');
+        _theProMakeGsmModem->print('\r');
 
-        _theProMakeM66Modem->setCommandCounter(2);
+        _theProMakeGsmModem->setCommandCounter(2);
         break;
     case 2:
-        if (_theProMakeM66Modem->genericParse_rsp(resp))
+        if (_theProMakeGsmModem->genericParse_rsp(resp))
         {
             // Response received
             if (resp)
             {
-                _theProMakeM66Modem->genericCommand_rqc("AT+QMTCFG=\"TIMEOUT\",0,50,5,0", true);
-                _theProMakeM66Modem->setCommandCounter(3);
+                _theProMakeGsmModem->genericCommand_rqc("AT+QMTCFG=\"TIMEOUT\",0,50,5,0", true);
+                _theProMakeGsmModem->setCommandCounter(3);
             }
             else
-                _theProMakeM66Modem->closeCommand(CMD_UNEXP);
+                _theProMakeGsmModem->closeCommand(CMD_UNEXP);
         }
         break;
     case 3:
-        if (_theProMakeM66Modem->genericParse_rsp(resp))
+        if (_theProMakeGsmModem->genericParse_rsp(resp))
         {
             // Response received
             if (resp)
             {
-                _theProMakeM66Modem->genericCommand_rqc("AT+QMTCFG=\"SESSION\",0,1", true);
-                _theProMakeM66Modem->setCommandCounter(4);
+                _theProMakeGsmModem->genericCommand_rqc("AT+QMTCFG=\"SESSION\",0,1", true);
+                _theProMakeGsmModem->setCommandCounter(4);
             }
             else
-                _theProMakeM66Modem->closeCommand(CMD_UNEXP);
+                _theProMakeGsmModem->closeCommand(CMD_UNEXP);
         }
         break;
     case 4:
-        if (_theProMakeM66Modem->genericParse_rsp(resp))
+        if (_theProMakeGsmModem->genericParse_rsp(resp))
         {
             // Response received
             if (resp)
             {
-                _theProMakeM66Modem->genericCommand_rqc("AT+QMTCFG=\"KEEPALIVE\",0,", false);
-                _theProMakeM66Modem->print(_keepAliveTime);
-                _theProMakeM66Modem->print('\r');
-                _theProMakeM66Modem->setCommandCounter(5);
+                _theProMakeGsmModem->genericCommand_rqc("AT+QMTCFG=\"KEEPALIVE\",0,", false);
+                _theProMakeGsmModem->print(_keepAliveTime);
+                _theProMakeGsmModem->print('\r');
+                _theProMakeGsmModem->setCommandCounter(5);
             }
             else
-                _theProMakeM66Modem->closeCommand(CMD_UNEXP);
+                _theProMakeGsmModem->closeCommand(CMD_UNEXP);
         }
         break;
     case 5:
-        if (_theProMakeM66Modem->genericParse_rsp(resp))
+        if (_theProMakeGsmModem->genericParse_rsp(resp))
         {
             // Response received
             if (resp)
             {
-                _theProMakeM66Modem->genericCommand_rqc("AT+QMTCFG=\"VERSION\",0,1", true);
-                _theProMakeM66Modem->setCommandCounter(6);
+                _theProMakeGsmModem->genericCommand_rqc("AT+QMTCFG=\"VERSION\",0,1", true);
+                _theProMakeGsmModem->setCommandCounter(6);
             }
             else
-                _theProMakeM66Modem->closeCommand(CMD_UNEXP);
+                _theProMakeGsmModem->closeCommand(CMD_UNEXP);
         }
         break;
     case 6:
-        if (_theProMakeM66Modem->genericParse_rsp(resp))
+        if (_theProMakeGsmModem->genericParse_rsp(resp))
         {
             // Response received
             if (resp)
             {
-                _theProMakeM66Modem->genericCommand_rqc("AT+QMTCFG=\"SSL\",0,0", true);
-                _theProMakeM66Modem->setCommandCounter(7);
+                _theProMakeGsmModem->genericCommand_rqc("AT+QMTCFG=\"SSL\",0,0", true);
+                _theProMakeGsmModem->setCommandCounter(7);
             }
             else
-                _theProMakeM66Modem->closeCommand(CMD_UNEXP);
+                _theProMakeGsmModem->closeCommand(CMD_UNEXP);
         }
         break;
     case 7:
-        if (_theProMakeM66Modem->genericParse_rsp(resp))
+        if (_theProMakeGsmModem->genericParse_rsp(resp))
         {
             // Response received
             if (resp)
             {
                 // AT+QMTOPEN
-                _theProMakeM66Modem->genericCommand_rqc("AT+QMTOPEN=0,\"", false);
-                _theProMakeM66Modem->print(_remoteServer);
-                _theProMakeM66Modem->print('"');
-                _theProMakeM66Modem->print(',');
-                _theProMakeM66Modem->print(_remotePort);
-                _theProMakeM66Modem->print('\r');
-                _theProMakeM66Modem->setCommandCounter(8);
-                _theProMakeM66Modem->takeMilliseconds();
+                _theProMakeGsmModem->genericCommand_rqc("AT+QMTOPEN=0,\"", false);
+                _theProMakeGsmModem->print(_remoteServer);
+                _theProMakeGsmModem->print('"');
+                _theProMakeGsmModem->print(',');
+                _theProMakeGsmModem->print(_remotePort);
+                _theProMakeGsmModem->print('\r');
+                _theProMakeGsmModem->setCommandCounter(8);
+                _theProMakeGsmModem->takeMilliseconds();
             }
             else
-                _theProMakeM66Modem->closeCommand(CMD_UNEXP);
+                _theProMakeGsmModem->closeCommand(CMD_UNEXP);
         }
         break;
     case 8:
-        if (_theProMakeM66Modem->genericParse_rsp(resp, "+QMTOPEN: 0,0"))
+        if (_theProMakeGsmModem->genericParse_rsp(resp, "+QMTOPEN: 0,0"))
         {
             // Response received
             if (resp)
             {
-                _theProMakeM66Modem->genericCommand_rqc("AT+QMTCONN=0,\"", false);
-                _theProMakeM66Modem->print(_clientId);
-                _theProMakeM66Modem->print('"');
+                _theProMakeGsmModem->genericCommand_rqc("AT+QMTCONN=0,\"", false);
+                _theProMakeGsmModem->print(_clientId);
+                _theProMakeGsmModem->print('"');
                 if (_username != 0)
                 {
-                    _theProMakeM66Modem->print(',');
-                    _theProMakeM66Modem->print('"');
-                    _theProMakeM66Modem->print(_username);
-                    _theProMakeM66Modem->print('"');
+                    _theProMakeGsmModem->print(',');
+                    _theProMakeGsmModem->print('"');
+                    _theProMakeGsmModem->print(_username);
+                    _theProMakeGsmModem->print('"');
                 }
                 if (_password != 0)
                 {
-                    _theProMakeM66Modem->print(',');
-                    _theProMakeM66Modem->print('"');
-                    _theProMakeM66Modem->print(_password);
-                    _theProMakeM66Modem->print('"');
+                    _theProMakeGsmModem->print(',');
+                    _theProMakeGsmModem->print('"');
+                    _theProMakeGsmModem->print(_password);
+                    _theProMakeGsmModem->print('"');
                 }
-                _theProMakeM66Modem->print('\r');
+                _theProMakeGsmModem->print('\r');
 
-                _theProMakeM66Modem->setCommandCounter(9);
-                _theProMakeM66Modem->takeMilliseconds();
+                _theProMakeGsmModem->setCommandCounter(9);
+                _theProMakeGsmModem->takeMilliseconds();
             }
             else
             {
-                if (_theProMakeM66Modem->takeMilliseconds() > __TOUTMQTT__)
+                if (_theProMakeGsmModem->takeMilliseconds() > __TOUTMQTT__)
                 {
-                    _theProMakeM66Modem->closeCommand(CMD_UNEXP);
+                    _theProMakeGsmModem->closeCommand(CMD_UNEXP);
                 }
             }
         }
         break;
     case 9:
-        if (_theProMakeM66Modem->genericParse_rsp(resp, "+QMTCONN: 0,0"))
+        if (_theProMakeGsmModem->genericParse_rsp(resp, "+QMTCONN: 0,0"))
         {
             // Response received
             if (resp)
             {
                 // Great. We're done
-                _theProMakeM66Modem->setStatus(NET_STATUS_MQTT_CONNECTED);
-                //_theProMakeM66Modem->theBuffer().chopUntil(auxLocate, true);
-                _theProMakeM66Modem->closeCommand(CMD_OK);
+                _theProMakeGsmModem->setStatus(NET_STATUS_MQTT_CONNECTED);
+                //_theProMakeGsmModem->theBuffer().chopUntil(auxLocate, true);
+                _theProMakeGsmModem->closeCommand(CMD_OK);
             }
             else
             {
-                if (_theProMakeM66Modem->takeMilliseconds() > __TOUTMQTT__)
+                if (_theProMakeGsmModem->takeMilliseconds() > __TOUTMQTT__)
                 {
-                    _theProMakeM66Modem->closeCommand(CMD_UNEXP);
+                    _theProMakeGsmModem->closeCommand(CMD_UNEXP);
                 }
             }
         }
@@ -225,8 +225,8 @@ void ProMakeM66MqttClientProvider::connectMQTTClientContinue()
 // Disconnect TCP main function.
 ProMake_GSM_CommandError_t ProMakeM66MqttClientProvider::disconnectMqtt(bool synchronous)
 {
-    _theProMakeM66Modem->openCommand(this, DISCONNECTMQTT);
-    _theProMakeM66Modem->unRegisterUMProvider(this);
+    _theProMakeGsmModem->openCommand(this, DISCONNECTMQTT);
+    _theProMakeGsmModem->unRegisterUMProvider(this);
     disconnectMqttContinue();
     // If synchronous, wait till attach is over, or not.
     if (synchronous)
@@ -236,7 +236,7 @@ ProMake_GSM_CommandError_t ProMakeM66MqttClientProvider::disconnectMqtt(bool syn
         while (((millis() - timeOut) < 10000) & (ready() == 0))
             delay(100);
     }
-    return _theProMakeM66Modem->getCommandError();
+    return _theProMakeGsmModem->getCommandError();
 }
 
 void ProMakeM66MqttClientProvider::disconnectMqttContinue()
@@ -245,37 +245,37 @@ void ProMakeM66MqttClientProvider::disconnectMqttContinue()
     // 0: Disconnect
     // 1: close
 
-    switch (_theProMakeM66Modem->getCommandCounter())
+    switch (_theProMakeGsmModem->getCommandCounter())
     {
     case 1:
-        _theProMakeM66Modem->genericCommand_rqc("AT+QMTDISC=0");
-        _theProMakeM66Modem->setCommandCounter(2);
+        _theProMakeGsmModem->genericCommand_rqc("AT+QMTDISC=0");
+        _theProMakeGsmModem->setCommandCounter(2);
         break;
     case 2:
-        if (_theProMakeM66Modem->genericParse_rsp(resp))
+        if (_theProMakeGsmModem->genericParse_rsp(resp))
         {
             // Response received
             if (resp)
             {
-                _theProMakeM66Modem->genericCommand_rqc("AT+QMTCLOSE=0");
-                _theProMakeM66Modem->setCommandCounter(3);
+                _theProMakeGsmModem->genericCommand_rqc("AT+QMTCLOSE=0");
+                _theProMakeGsmModem->setCommandCounter(3);
             }
             else
-                _theProMakeM66Modem->closeCommand(CMD_UNEXP);
+                _theProMakeGsmModem->closeCommand(CMD_UNEXP);
         }
         break;
     case 3:
-        if (_theProMakeM66Modem->genericParse_rsp(resp))
+        if (_theProMakeGsmModem->genericParse_rsp(resp))
         {
             // Response received
             if (resp)
             {
                 // Great. We're done
-                _theProMakeM66Modem->setStatus(NET_STATUS_GPRS_READY);
-                _theProMakeM66Modem->closeCommand(CMD_OK);
+                _theProMakeGsmModem->setStatus(NET_STATUS_GPRS_READY);
+                _theProMakeGsmModem->closeCommand(CMD_OK);
             }
             else
-                _theProMakeM66Modem->closeCommand(CMD_UNEXP);
+                _theProMakeGsmModem->closeCommand(CMD_UNEXP);
         }
         break;
     }
@@ -283,13 +283,13 @@ void ProMakeM66MqttClientProvider::disconnectMqttContinue()
 
 ProMake_GSM_CommandError_t ProMakeM66MqttClientProvider::publish(const char *topic, const char *payload, int qos, int retain, bool synchronous)
 {
-    if (_theProMakeM66Modem->getStatus() == NET_STATUS_MQTT_CONNECTED)
+    if (_theProMakeGsmModem->getStatus() == NET_STATUS_MQTT_CONNECTED)
     {
         _pubTopic = topic;
         _pubPayload = payload;
         _pubQos = qos;
         _pubRetain = retain;
-        _theProMakeM66Modem->openCommand(this, MQTTPub);
+        _theProMakeGsmModem->openCommand(this, MQTTPub);
         publishContinue();
         // If synchronous, wait till attach is over, or not.
         if (synchronous)
@@ -299,7 +299,7 @@ ProMake_GSM_CommandError_t ProMakeM66MqttClientProvider::publish(const char *top
             while (((millis() - timeOut) < 5000) & (ready() == 0))
                 delay(100);
         }
-        return _theProMakeM66Modem->getCommandError();
+        return _theProMakeGsmModem->getCommandError();
     }
     return CMD_ERROR;
 }
@@ -308,56 +308,56 @@ void ProMakeM66MqttClientProvider::publishContinue()
 {
     bool resp;
 
-    switch (_theProMakeM66Modem->getCommandCounter())
+    switch (_theProMakeGsmModem->getCommandCounter())
     {
     case 1:
-        _theProMakeM66Modem->genericCommand_rqc("AT+QMTPUB=0,0,", false);
-        _theProMakeM66Modem->print(_pubQos);
-        _theProMakeM66Modem->print(',');
-        _theProMakeM66Modem->print(_pubRetain);
-        _theProMakeM66Modem->print(',');
-        _theProMakeM66Modem->print('"');
-        _theProMakeM66Modem->print(_pubTopic);
-        _theProMakeM66Modem->print('"');
-        _theProMakeM66Modem->print('\r');
-        _theProMakeM66Modem->setCommandCounter(2);
-        _theProMakeM66Modem->takeMilliseconds();
+        _theProMakeGsmModem->genericCommand_rqc("AT+QMTPUB=0,0,", false);
+        _theProMakeGsmModem->print(_pubQos);
+        _theProMakeGsmModem->print(',');
+        _theProMakeGsmModem->print(_pubRetain);
+        _theProMakeGsmModem->print(',');
+        _theProMakeGsmModem->print('"');
+        _theProMakeGsmModem->print(_pubTopic);
+        _theProMakeGsmModem->print('"');
+        _theProMakeGsmModem->print('\r');
+        _theProMakeGsmModem->setCommandCounter(2);
+        _theProMakeGsmModem->takeMilliseconds();
         break;
     case 2:
-        if (_theProMakeM66Modem->genericParse_rsp(resp, ">"))
+        if (_theProMakeGsmModem->genericParse_rsp(resp, ">"))
         {
             // Response received
             if (resp)
             {
-                _theProMakeM66Modem->print(_pubPayload);
-                _theProMakeM66Modem->write(26);
-                _theProMakeM66Modem->print('\r');
-                _theProMakeM66Modem->setCommandCounter(3);
-                _theProMakeM66Modem->takeMilliseconds();
+                _theProMakeGsmModem->print(_pubPayload);
+                _theProMakeGsmModem->write(26);
+                _theProMakeGsmModem->print('\r');
+                _theProMakeGsmModem->setCommandCounter(3);
+                _theProMakeGsmModem->takeMilliseconds();
             }
             else
             {
-                if (_theProMakeM66Modem->takeMilliseconds() > __TOUTMQTT__)
+                if (_theProMakeGsmModem->takeMilliseconds() > __TOUTMQTT__)
                 {
-                    _theProMakeM66Modem->closeCommand(CMD_UNEXP);
+                    _theProMakeGsmModem->closeCommand(CMD_UNEXP);
                 }
             }
         }
         break;
     case 3:
-        if (_theProMakeM66Modem->genericParse_rsp(resp, "+QMTPUB: 0,0"))
+        if (_theProMakeGsmModem->genericParse_rsp(resp, "+QMTPUB: 0,0"))
         {
             // Response received
             if (resp)
             {
                 // Great. We're done
-                _theProMakeM66Modem->closeCommand(CMD_OK);
+                _theProMakeGsmModem->closeCommand(CMD_OK);
             }
             else
             {
-                if (_theProMakeM66Modem->takeMilliseconds() > __TOUTMQTT__)
+                if (_theProMakeGsmModem->takeMilliseconds() > __TOUTMQTT__)
                 {
-                    _theProMakeM66Modem->closeCommand(CMD_UNEXP);
+                    _theProMakeGsmModem->closeCommand(CMD_UNEXP);
                 }
             }
         }
@@ -367,11 +367,11 @@ void ProMakeM66MqttClientProvider::publishContinue()
 
 ProMake_GSM_CommandError_t ProMakeM66MqttClientProvider::subscribe(const char *topic, int qos, bool synchronous)
 {
-    if (_theProMakeM66Modem->getStatus() == NET_STATUS_MQTT_CONNECTED)
+    if (_theProMakeGsmModem->getStatus() == NET_STATUS_MQTT_CONNECTED)
     {
         _subTopic = topic;
         _subQos = qos;
-        _theProMakeM66Modem->openCommand(this, MQTTSub);
+        _theProMakeGsmModem->openCommand(this, MQTTSub);
         subscribeContinue();
         // If synchronous, wait till attach is over, or not.
         if (synchronous)
@@ -381,7 +381,7 @@ ProMake_GSM_CommandError_t ProMakeM66MqttClientProvider::subscribe(const char *t
             while (((millis() - timeOut) < 5000) & (ready() == 0))
                 delay(100);
         }
-        return _theProMakeM66Modem->getCommandError();
+        return _theProMakeGsmModem->getCommandError();
     }
     return CMD_ERROR;
 }
@@ -390,33 +390,33 @@ void ProMakeM66MqttClientProvider::subscribeContinue()
 {
     bool resp;
 
-    switch (_theProMakeM66Modem->getCommandCounter())
+    switch (_theProMakeGsmModem->getCommandCounter())
     {
     case 1:
-        _theProMakeM66Modem->genericCommand_rqc("AT+QMTSUB=0,1,", false);
-        _theProMakeM66Modem->print('"');
-        _theProMakeM66Modem->print(_subTopic);
-        _theProMakeM66Modem->print('"');
-        _theProMakeM66Modem->print(',');
-        _theProMakeM66Modem->print(_subQos);
-        _theProMakeM66Modem->print('\r');
-        _theProMakeM66Modem->setCommandCounter(2);
-        _theProMakeM66Modem->takeMilliseconds();
+        _theProMakeGsmModem->genericCommand_rqc("AT+QMTSUB=0,1,", false);
+        _theProMakeGsmModem->print('"');
+        _theProMakeGsmModem->print(_subTopic);
+        _theProMakeGsmModem->print('"');
+        _theProMakeGsmModem->print(',');
+        _theProMakeGsmModem->print(_subQos);
+        _theProMakeGsmModem->print('\r');
+        _theProMakeGsmModem->setCommandCounter(2);
+        _theProMakeGsmModem->takeMilliseconds();
         break;
     case 2:
-        if (_theProMakeM66Modem->genericParse_rsp(resp, "+QMTSUB: 0,1,0"))
+        if (_theProMakeGsmModem->genericParse_rsp(resp, "+QMTSUB: 0,1,0"))
         {
             // Response received
             if (resp)
             {
                 // Great. We're done
-                _theProMakeM66Modem->closeCommand(CMD_OK);
+                _theProMakeGsmModem->closeCommand(CMD_OK);
             }
             else
             {
-                if (_theProMakeM66Modem->takeMilliseconds() > __TOUTMQTT__)
+                if (_theProMakeGsmModem->takeMilliseconds() > __TOUTMQTT__)
                 {
-                    _theProMakeM66Modem->closeCommand(CMD_UNEXP);
+                    _theProMakeGsmModem->closeCommand(CMD_UNEXP);
                 }
             }
         }
@@ -426,7 +426,7 @@ void ProMakeM66MqttClientProvider::subscribeContinue()
 
 void ProMakeM66MqttClientProvider::manageResponse(byte from, byte to)
 {
-    switch (_theProMakeM66Modem->getOngoingCommand())
+    switch (_theProMakeGsmModem->getOngoingCommand())
     {
     case CONNECTMQTTCLIENT:
         connectMQTTClientContinue();
@@ -447,14 +447,14 @@ void ProMakeM66MqttClientProvider::manageResponse(byte from, byte to)
 // Yes, we recognize "closes" in client mode
 bool ProMakeM66MqttClientProvider::recognizeUnsolicitedEvent(byte oldTail)
 {
-    if (_theProMakeM66Modem->theBuffer().locate("+QMTRECV:"))
+    if (_theProMakeGsmModem->theBuffer().locate("+QMTRECV:"))
     {
         // +QMTRECV: 0,0,SAMA/865006047165213,ID/101
-        _theProMakeM66Modem->theBuffer().chopUntil("+QMTRECV: ", true);
+        _theProMakeGsmModem->theBuffer().chopUntil("+QMTRECV: ", true);
         char c;
         char msg[50] = "";
         int i = 0;
-        while (((c = _theProMakeM66Modem->theBuffer().read()) != 0) & (i < 50))
+        while (((c = _theProMakeGsmModem->theBuffer().read()) != 0) & (i < 50))
         {
             msg[i] = c;
             i++;
@@ -478,44 +478,44 @@ bool ProMakeM66MqttClientProvider::recognizeUnsolicitedEvent(byte oldTail)
             callback(topic, payload);
         }
 
-        //_theProMakeM66Modem->theBuffer().extractSubstring()
+        //_theProMakeGsmModem->theBuffer().extractSubstring()
 
         return true;
     }
-    if (_theProMakeM66Modem->theBuffer().locate("+QMTSTAT:"))
+    if (_theProMakeGsmModem->theBuffer().locate("+QMTSTAT:"))
     {
-        _theProMakeM66Modem->theBuffer().flush();
+        _theProMakeGsmModem->theBuffer().flush();
         return true;
     }
     /*
-    if (_theProMakeM66Modem->theBuffer().locate("+QMTOPEN:"))
+    if (_theProMakeGsmModem->theBuffer().locate("+QMTOPEN:"))
     {
-        _theProMakeM66Modem->theBuffer().flush();
+        _theProMakeGsmModem->theBuffer().flush();
         return true;
     }
-    if (_theProMakeM66Modem->theBuffer().locate("+QMTCONN:"))
+    if (_theProMakeGsmModem->theBuffer().locate("+QMTCONN:"))
     {
-        _theProMakeM66Modem->theBuffer().flush();
+        _theProMakeGsmModem->theBuffer().flush();
         return true;
     }
-    if (_theProMakeM66Modem->theBuffer().locate("+QMTSUB:"))
+    if (_theProMakeGsmModem->theBuffer().locate("+QMTSUB:"))
     {
-        _theProMakeM66Modem->theBuffer().flush();
+        _theProMakeGsmModem->theBuffer().flush();
         return true;
     }
-    if (_theProMakeM66Modem->theBuffer().locate("+QMTPUB:"))
+    if (_theProMakeGsmModem->theBuffer().locate("+QMTPUB:"))
     {
-        _theProMakeM66Modem->theBuffer().flush();
+        _theProMakeGsmModem->theBuffer().flush();
         return true;
     }
-    if (_theProMakeM66Modem->theBuffer().locate("+QMTDISC:"))
+    if (_theProMakeGsmModem->theBuffer().locate("+QMTDISC:"))
     {
-        _theProMakeM66Modem->theBuffer().flush();
+        _theProMakeGsmModem->theBuffer().flush();
         return true;
     }
-    if (_theProMakeM66Modem->theBuffer().locate("+QMTCLOSE:"))
+    if (_theProMakeGsmModem->theBuffer().locate("+QMTCLOSE:"))
     {
-        _theProMakeM66Modem->theBuffer().flush();
+        _theProMakeGsmModem->theBuffer().flush();
         return true;
     }
     */

@@ -50,7 +50,7 @@ private:
 
 public:
     /** Constructor */
-    ProMakeM66MqttClientProvider(ProMake_M66_Modem *Modem, MQTT_CALLBACK_SIGNATURE);
+    ProMakeM66MqttClientProvider(ProMake_GSM_Modem *Modem, MQTT_CALLBACK_SIGNATURE);
 
     void setCallback(MQTT_CALLBACK_SIGNATURE);
     /** Connect to a remote TCP server

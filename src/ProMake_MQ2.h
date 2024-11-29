@@ -4,7 +4,7 @@
 // define the load resistance on the board, in kilo ohms
 #define RL_VALUE 5.0
 // given constant
-#define RO_CLEAN_AIR_FACTOR 9.83
+#define RO_CLEAN_AIR_FACTOR 9.83 //RS / R0 = 9.83 ppm 
 
 // reads 10 times the sensor every 50ms and takes the average
 // NOTE: it is encouraged to take more samples during the calibration

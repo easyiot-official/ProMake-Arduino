@@ -69,7 +69,7 @@ private:
 public:
     /** Constructor
      */
-    ProMakeM66DataNetworkProvider(ProMake_M66_Modem *Modem);
+    ProMakeM66DataNetworkProvider(ProMake_GSM_Modem *Modem);
 
     /** Attach to GPRS/GSM network
         @param networkId 	APN GPRS

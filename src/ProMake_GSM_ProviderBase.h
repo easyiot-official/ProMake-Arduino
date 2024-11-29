@@ -53,15 +53,15 @@ enum ProMake_GSM_CommandError_t
     CMD_OK_NO_DATA
 };
 
-class ProMake_M66_Modem;
+class ProMake_GSM_Modem;
 
 class ProMakeGsmProviderBase
 {
 protected:
-    ProMake_M66_Modem *_theProMakeM66Modem;
+    ProMake_GSM_Modem *_theProMakeGsmModem;
 
 public:
-    ProMakeGsmProviderBase(ProMake_M66_Modem *Modem);
+    ProMakeGsmProviderBase(ProMake_GSM_Modem *Modem);
     /** Get last command status
         @return Returns 0 if last command is still executing, 1 success, >1 error
     */

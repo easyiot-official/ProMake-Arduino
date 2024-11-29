@@ -1,19 +1,19 @@
 #include "ProMake_M66_AccessProvider.h"
-#include "ProMake_M66_Modem.h"
+#include "ProMake_GSM_Modem.h"
 #include <ProMake_debug.h>
 
 #define __TOUTSHUTDOWN__ 5000
 #define __TOUTMODEMCONFIGURATION__ 20000
 #define __TOUTAT__ 1000
 
-ProMakeM66AccessProvider::ProMakeM66AccessProvider(ProMake_M66_Modem *Modem, bool debug) : ProMakeGsmProviderBase(Modem)
+ProMakeM66AccessProvider::ProMakeM66AccessProvider(ProMake_GSM_Modem *Modem, bool debug) : ProMakeGsmProviderBase(Modem)
 {
-  //_theProMakeM66Modem->setDebug(debug);
-  _theProMakeM66Modem->registerUMProvider(this);
+  //_theProMakeGsmModem->setDebug(debug);
+  _theProMakeGsmModem->registerUMProvider(this);
   retryCnt = 0;
 }
 
-ProMake_GSM_NetworkStatus_t ProMakeM66AccessProvider::getStatus() { return _theProMakeM66Modem->getStatus(); };
+ProMake_GSM_NetworkStatus_t ProMakeM66AccessProvider::getStatus() { return _theProMakeGsmModem->getStatus(); };
 
 ProMake_GSM_NetworkStatus_t ProMakeM66AccessProvider::begin(int8_t pwrPin, char *pin, bool restart, bool synchronous)
 {
@@ -26,13 +26,13 @@ ProMake_GSM_NetworkStatus_t ProMakeM66AccessProvider::begin(int8_t pwrPin, char 
   digitalWrite(pwrPin, HIGH);
   delay(10000);
 
-  _theProMakeM66Modem->setStatus(NET_STATUS_IDLE);
+  _theProMakeGsmModem->setStatus(NET_STATUS_IDLE);
   PROMAKE_LOGDEBUG("Powered ON");
 
   //
   _pin = pin;
-  _theProMakeM66Modem->openCommand(this, MODEMCONFIG);
-  _theProMakeM66Modem->setStatus(NET_STATUS_CONNECTING);
+  _theProMakeGsmModem->openCommand(this, MODEMCONFIG);
+  _theProMakeGsmModem->setStatus(NET_STATUS_CONNECTING);
   ModemConfigurationContinue();
 
   if (synchronous)
@@ -42,12 +42,12 @@ ProMake_GSM_NetworkStatus_t ProMakeM66AccessProvider::begin(int8_t pwrPin, char 
     while (((millis() - timeOut) < __TOUTMODEMCONFIGURATION__) & (ready() == 0))
       delay(100);
   }
-  return _theProMakeM66Modem->getStatus();
+  return _theProMakeGsmModem->getStatus();
 }
 
 void ProMakeM66AccessProvider::manageResponse(byte from, byte to)
 {
-  switch (_theProMakeM66Modem->getOngoingCommand())
+  switch (_theProMakeGsmModem->getOngoingCommand())
   {
   case MODEMCONFIG:
     ModemConfigurationContinue();
@@ -65,17 +65,17 @@ void ProMakeM66AccessProvider::ModemConfigurationContinue()
   bool resp;
   // 1: Send AT
   // 2: Wait AT OK and SetPin or CGREG
-  int ct = _theProMakeM66Modem->getCommandCounter();
+  int ct = _theProMakeGsmModem->getCommandCounter();
   if (ct == 1)
   {
-    _theProMakeM66Modem->genericCommand_rqc("AT");
-    _theProMakeM66Modem->takeMilliseconds();
-    _theProMakeM66Modem->setCommandCounter(2);
+    _theProMakeGsmModem->genericCommand_rqc("AT");
+    _theProMakeGsmModem->takeMilliseconds();
+    _theProMakeGsmModem->setCommandCounter(2);
   }
   else if (ct == 2)
   {
     // Wait for AT - OK.
-    if (_theProMakeM66Modem->genericParse_rsp(resp))
+    if (_theProMakeGsmModem->genericParse_rsp(resp))
     {
       if (resp)
       {
@@ -83,85 +83,85 @@ void ProMakeM66AccessProvider::ModemConfigurationContinue()
         PROMAKE_LOGDEBUG("Modem is responding");
         if (_pin && (_pin[0] != 0))
         {
-          _theProMakeM66Modem->genericCommand_rqc("AT+CPIN=", false);
-          _theProMakeM66Modem->print(_pin);
-          _theProMakeM66Modem->print('\r');
-          _theProMakeM66Modem->setCommandCounter(3);
+          _theProMakeGsmModem->genericCommand_rqc("AT+CPIN=", false);
+          _theProMakeGsmModem->print(_pin);
+          _theProMakeGsmModem->print('\r');
+          _theProMakeGsmModem->setCommandCounter(3);
         }
         else
         {
           PROMAKE_LOGDEBUG("AT+CGREG?");
-          _theProMakeM66Modem->setCommandCounter(4);
-          _theProMakeM66Modem->takeMilliseconds();
+          _theProMakeGsmModem->setCommandCounter(4);
+          _theProMakeGsmModem->takeMilliseconds();
           retryCnt = 10;
-          _theProMakeM66Modem->genericCommand_rqc("AT+CGREG?");
+          _theProMakeGsmModem->genericCommand_rqc("AT+CGREG?");
         }
       }
       else
       {
-        if (_theProMakeM66Modem->takeMilliseconds() > __TOUTMODEMCONFIGURATION__)
+        if (_theProMakeGsmModem->takeMilliseconds() > __TOUTMODEMCONFIGURATION__)
         {
           PROMAKE_LOGDEBUG("Error - No Response from modem!");
-          _theProMakeM66Modem->closeCommand(CMD_UNEXP);
+          _theProMakeGsmModem->closeCommand(CMD_UNEXP);
         }
       }
     }
   }
   else if (ct == 3)
   {
-    if (_theProMakeM66Modem->genericParse_rsp(resp))
+    if (_theProMakeGsmModem->genericParse_rsp(resp))
     {
       if (resp)
       {
-        _theProMakeM66Modem->setCommandCounter(4);
-        _theProMakeM66Modem->takeMilliseconds();
+        _theProMakeGsmModem->setCommandCounter(4);
+        _theProMakeGsmModem->takeMilliseconds();
         delay(2000);
         retryCnt = 10;
-        _theProMakeM66Modem->genericCommand_rqc("AT+CGREG?");
+        _theProMakeGsmModem->genericCommand_rqc("AT+CGREG?");
       }
       else
-        _theProMakeM66Modem->closeCommand(CMD_UNEXP);
+        _theProMakeGsmModem->closeCommand(CMD_UNEXP);
     }
   }
   else if (ct == 4)
   {
-    if (_theProMakeM66Modem->genericParse_rsp(resp, "+CGREG: 0,1", "+CGREG: 0,5"))
+    if (_theProMakeGsmModem->genericParse_rsp(resp, "+CGREG: 0,1", "+CGREG: 0,5"))
     {
       if (resp)
       {
-        _theProMakeM66Modem->setCommandCounter(5);
-        _theProMakeM66Modem->genericCommand_rqc("AT+CMGF=1");
+        _theProMakeGsmModem->setCommandCounter(5);
+        _theProMakeGsmModem->genericCommand_rqc("AT+CMGF=1");
       }
       else
       {
         // If not, launch command again
-        _theProMakeM66Modem->genericParse_rsp(resp, "+CGREG: 0,2");
+        _theProMakeGsmModem->genericParse_rsp(resp, "+CGREG: 0,2");
         if (resp)
         {
           PROMAKE_LOGDEBUG("Modem is searching");
           delay(2000);
-          _theProMakeM66Modem->takeMilliseconds();
-          _theProMakeM66Modem->genericCommand_rqc("AT+CGREG?");
+          _theProMakeGsmModem->takeMilliseconds();
+          _theProMakeGsmModem->genericCommand_rqc("AT+CGREG?");
         }
         else
         {
-          _theProMakeM66Modem->genericParse_rsp(resp, "+CGREG: 0,0");
+          _theProMakeGsmModem->genericParse_rsp(resp, "+CGREG: 0,0");
           if (resp)
           {
             PROMAKE_LOGDEBUG("register failed");
-            _theProMakeM66Modem->closeCommand(CMD_UNEXP);
+            _theProMakeGsmModem->closeCommand(CMD_UNEXP);
           }
-          else if (_theProMakeM66Modem->takeMilliseconds() > __TOUTMODEMCONFIGURATION__ || retryCnt < 0)
+          else if (_theProMakeGsmModem->takeMilliseconds() > __TOUTMODEMCONFIGURATION__ || retryCnt < 0)
           {
             PROMAKE_LOGDEBUG("register timed out");
-            _theProMakeM66Modem->closeCommand(CMD_UNEXP);
+            _theProMakeGsmModem->closeCommand(CMD_UNEXP);
           }
           else
           {
             retryCnt--;
             delay(2000);
-            _theProMakeM66Modem->takeMilliseconds();
-            //_theProMakeM66Modem->genericCommand_rqc("AT+CGREG?");
+            _theProMakeGsmModem->takeMilliseconds();
+            //_theProMakeGsmModem->genericCommand_rqc("AT+CGREG?");
           }
         }
       }
@@ -170,26 +170,26 @@ void ProMakeM66AccessProvider::ModemConfigurationContinue()
   else if (ct == 5)
   {
     // 7: Wait Calling Line Id OK
-    if (_theProMakeM66Modem->genericParse_rsp(resp))
+    if (_theProMakeGsmModem->genericParse_rsp(resp))
     {
       // Echo off
-      _theProMakeM66Modem->setCommandCounter(7);
-      _theProMakeM66Modem->genericCommand_rqc("ATE0");
+      _theProMakeGsmModem->setCommandCounter(7);
+      _theProMakeGsmModem->genericCommand_rqc("ATE0");
     }
   }
   else if (ct == 7)
   {
     // 9: Wait ATCOLP OK
-    if (_theProMakeM66Modem->genericParse_rsp(resp))
+    if (_theProMakeGsmModem->genericParse_rsp(resp))
     {
       if (resp)
       {
-        _theProMakeM66Modem->setStatus(NET_STATUS_GSM_READY);
-        _theProMakeM66Modem->closeCommand(CMD_OK);
+        _theProMakeGsmModem->setStatus(NET_STATUS_GSM_READY);
+        _theProMakeGsmModem->closeCommand(CMD_OK);
       }
-      else if (_theProMakeM66Modem->takeMilliseconds() > __TOUTMODEMCONFIGURATION__)
+      else if (_theProMakeGsmModem->takeMilliseconds() > __TOUTMODEMCONFIGURATION__)
       {
-        _theProMakeM66Modem->closeCommand(CMD_UNEXP);
+        _theProMakeGsmModem->closeCommand(CMD_UNEXP);
       }
     }
   }
@@ -198,11 +198,11 @@ void ProMakeM66AccessProvider::ModemConfigurationContinue()
 // Alive Test main function.
 ProMake_GSM_CommandError_t ProMakeM66AccessProvider::isAccessAlive()
 {
-  _theProMakeM66Modem->setCommandError(CMD_ONGOING);
-  _theProMakeM66Modem->setCommandCounter(1);
-  _theProMakeM66Modem->openCommand(this, ALIVETEST);
+  _theProMakeGsmModem->setCommandError(CMD_ONGOING);
+  _theProMakeGsmModem->setCommandCounter(1);
+  _theProMakeGsmModem->openCommand(this, ALIVETEST);
   isModemAliveContinue();
-  return _theProMakeM66Modem->getCommandError();
+  return _theProMakeGsmModem->getCommandError();
 }
 
 // Alive Test continue function.
@@ -210,16 +210,16 @@ void ProMakeM66AccessProvider::isModemAliveContinue()
 {
   /*
 bool rsp;
-switch _theProMakeM66Modem->getCommandCounter()) {
+switch _theProMakeGsmModem->getCommandCounter()) {
     case 1:
-    _theProMakeM66Modem->genericCommand_rq(_command_AT);
-    _theProMakeM66Modem->setCommandCounter(2);
+    _theProMakeGsmModem->genericCommand_rq(_command_AT);
+    _theProMakeGsmModem->setCommandCounter(2);
       break;
   case 2:
-    if(_theProMakeM66Modem->genericParse_rsp(rsp))
+    if(_theProMakeGsmModem->genericParse_rsp(rsp))
     {
-      if (rsp) _theProMakeM66Modem->closeCommand(1);
-      else _theProMakeM66Modem->closeCommand(3);
+      if (rsp) _theProMakeGsmModem->closeCommand(1);
+      else _theProMakeGsmModem->closeCommand(3);
     }
       break;
   }
@@ -233,37 +233,37 @@ ProMake_GSM_CommandError_t ProMakeM66AccessProvider::getSignalQuality(char *rssi
   _rssi[0] = 0;
   _ber[0] = 0;
 
-  _theProMakeM66Modem->setCommandError(CMD_ONGOING);
-  _theProMakeM66Modem->setCommandCounter(1);
-  _theProMakeM66Modem->openCommand(this, SIGNALQUALITY);
+  _theProMakeGsmModem->setCommandError(CMD_ONGOING);
+  _theProMakeGsmModem->setCommandCounter(1);
+  _theProMakeGsmModem->openCommand(this, SIGNALQUALITY);
   GetSignalQualityContinue();
 
   unsigned long timeOut = millis();
   while (((millis() - timeOut) < 5000) & (ready() == 0));
 
-  return _theProMakeM66Modem->getCommandError();
+  return _theProMakeGsmModem->getCommandError();
 }
 
 void ProMakeM66AccessProvider::GetSignalQualityContinue()
 {
 
   bool rsp;
-  switch (_theProMakeM66Modem->getCommandCounter())
+  switch (_theProMakeGsmModem->getCommandCounter())
   {
   case 1:
-    _theProMakeM66Modem->genericCommand_rqc("AT+CSQ");
-    _theProMakeM66Modem->setCommandCounter(2);
+    _theProMakeGsmModem->genericCommand_rqc("AT+CSQ");
+    _theProMakeGsmModem->setCommandCounter(2);
     break;
   case 2:
-    if (_theProMakeM66Modem->genericParse_rsp(rsp, "+CSQ: "))
+    if (_theProMakeGsmModem->genericParse_rsp(rsp, "+CSQ: "))
     {
       if (rsp)
       {
         parseCSQ_available(rsp);
-        _theProMakeM66Modem->closeCommand(CMD_OK);
+        _theProMakeGsmModem->closeCommand(CMD_OK);
       }
       else
-        _theProMakeM66Modem->closeCommand(CMD_UNEXP);
+        _theProMakeGsmModem->closeCommand(CMD_UNEXP);
     }
     break;
   }
@@ -274,12 +274,12 @@ bool ProMakeM66AccessProvider::parseCSQ_available(bool &rsp)
   char c;
   char quality[50] = "";
   int i = 0;
-  if (!(_theProMakeM66Modem->theBuffer().chopUntil("+CSQ: ", true)))
+  if (!(_theProMakeGsmModem->theBuffer().chopUntil("+CSQ: ", true)))
     rsp = false;
   else
     rsp = true;
 
-  while (((c = _theProMakeM66Modem->theBuffer().read()) != 0) & (i < 6))
+  while (((c = _theProMakeGsmModem->theBuffer().read()) != 0) & (i < 6))
   {
     if ((c < 58) & (c > 47) || c == ',')
     {
@@ -302,9 +302,9 @@ bool ProMakeM66AccessProvider::parseCSQ_available(bool &rsp)
 bool ProMakeM66AccessProvider::recognizeUnsolicitedEvent(byte oldTail)
 {
 
-  if (_theProMakeM66Modem->theBuffer().locate("NORMAL POWER DOWN"))
+  if (_theProMakeGsmModem->theBuffer().locate("NORMAL POWER DOWN"))
   {
-    //_theProMakeM66Modem->theBuffer().flush();
+    //_theProMakeGsmModem->theBuffer().flush();
     //delay(5000);
     return true;
   }
