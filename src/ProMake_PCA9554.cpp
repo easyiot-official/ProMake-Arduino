@@ -20,10 +20,7 @@ uint8_t ProMake_PCA9554::in(uint8_t addr)
         return 1;
     delay(15);
     uint8_t readValue = ProMakeCore.request8(addr, true);
-    if (readValue == ERROR_I2C_TIMEOUT)
-    {
-        return (ERROR_I2C_TIMEOUT);
-    }
+
     return readValue;
 }
 

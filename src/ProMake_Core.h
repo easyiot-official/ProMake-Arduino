@@ -26,8 +26,8 @@ private:
 	// int a,b,c,d;
 public:
 	ProMake_CoreClass() {}
-	uint8_t request8(byte device);
-	uint16_t request16(byte device);
+	uint8_t request8(byte device, bool sendStop);
+	uint16_t request16(byte device, bool sendStop);
 	uint32_t request24(byte device, byte delay, byte timeout);
 	bool write(byte value);
 	bool write1(byte device, byte value);
