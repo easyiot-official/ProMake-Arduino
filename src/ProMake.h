@@ -2,9 +2,9 @@
 #define __PROMAKE_H__
 
 
+namespace ProMake {
 
-
-enum enuProMakeSlot
+enum enuSlot
 {
 	ARDUINO_SHIELD_SLOT1,
 	ARDUINO_SHIELD_SLOT2,
@@ -13,4 +13,5 @@ enum enuProMakeSlot
 	ARDUINO_NANO_KIT_SLOT3
 };
 
+}
 #endif

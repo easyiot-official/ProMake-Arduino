@@ -3,7 +3,9 @@
 
 #include "ProMake_Core.h"
 
-class ProMake_VEML7700 : public ProMake_CoreClass
+namespace ProMake
+{
+class VEML7700 : public CoreClass
 {
 public:
   /**
@@ -67,11 +69,11 @@ public:
   }eAlsSTATUS_t;
 
   /**
-   * @fn ProMake_VEML7700
+   * @fn VEML7700
    * @brief Constructor
    * @return None
    */
-  ProMake_VEML7700();
+  VEML7700();
 
   /**
    * @fn setGain
@@ -298,8 +300,8 @@ public:
 
   /**
    * @fn getAutoALSLux(float& lux,
-   * @n                ProMake_VEML7700::eAlsGain_t& auto_gain,
-   * @n                ProMake_VEML7700::eAlsItime_t& auto_itime,
+   * @n                VEML7700::eAlsGain_t& auto_gain,
+   * @n                VEML7700::eAlsItime_t& auto_itime,
    * @n                uint32_t& raw_counts)
    * @brief Get measured AutoALS illumination intensity value
    * @param lux Buffer the sensor data, 16-bit data
@@ -311,14 +313,14 @@ public:
    * @retval STATUS_ERROR Operation failed
    */
   uint8_t getAutoALSLux(float& lux,
-                        ProMake_VEML7700::eAlsGain_t& auto_gain,
-                        ProMake_VEML7700::eAlsItime_t& auto_itime,
+                        VEML7700::eAlsGain_t& auto_gain,
+                        VEML7700::eAlsItime_t& auto_itime,
                         uint32_t& raw_counts);
 
   /**
    * @fn getAutoWhiteLux(float& lux,
-   * @n                  ProMake_VEML7700::eAlsGain_t& auto_gain,
-   * @n                  ProMake_VEML7700::eAlsItime_t& auto_itime,
+   * @n                  VEML7700::eAlsGain_t& auto_gain,
+   * @n                  VEML7700::eAlsItime_t& auto_itime,
    * @n                  uint32_t& raw_counts)
    * @brief Get measured AutoWhite illumination intensity value
    * @param lux Buffer the sensor data, 16-bit data
@@ -330,8 +332,8 @@ public:
    * @retval STATUS_ERROR Operation failed
    */
   uint8_t getAutoWhiteLux(float& lux,
-                          ProMake_VEML7700::eAlsGain_t& auto_gain,
-                          ProMake_VEML7700::eAlsItime_t& auto_itime,
+                          VEML7700::eAlsGain_t& auto_gain,
+                          VEML7700::eAlsItime_t& auto_itime,
                           uint32_t& raw_counts);
 
   /**
@@ -341,7 +343,7 @@ public:
   void sampleDelay(void);
 
 private:
-  typedef uint8_t (ProMake_VEML7700::*getCountsFunction)(uint32_t& counts);
+  typedef uint8_t (VEML7700::*getCountsFunction)(uint32_t& counts);
   enum { I2C_ADDRESS = 0x10 };
   enum { COMMAND_ALS_SM = 0x00, ALS_SM_MASK = 0x1800, ALS_SM_SHIFT = 11 };
   enum { COMMAND_ALS_IT = 0x00, ALS_IT_MASK = 0x03c0, ALS_IT_SHIFT = 6 };
@@ -406,11 +408,13 @@ private:
    * @retval STATUS_ERROR Operation failed
    */
   uint8_t getAutoXLux(float& lux,
-                      ProMake_VEML7700::getCountsFunction counts_func,
-                      ProMake_VEML7700::eAlsGain_t& auto_gain,
-                      ProMake_VEML7700::eAlsItime_t& auto_itime,
+                      VEML7700::getCountsFunction counts_func,
+                      VEML7700::eAlsGain_t& auto_gain,
+                      VEML7700::eAlsItime_t& auto_itime,
                       uint32_t& raw_counts);
 
 };
+} // namespace ProMake
+
 
 #endif

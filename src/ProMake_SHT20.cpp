@@ -1,10 +1,37 @@
 #include "ProMake_SHT20.h"
 #include <ProMake_debug.h>
 
-uint16_t ProMake_SHT20::readValue(byte cmd)
+#define SLAVE_ADDRESS 0x40
+
+#define TRIGGER_TEMP_MEASURE_HOLD 0xE3
+#define TRIGGER_HUMD_MEASURE_HOLD 0xE5
+#define TRIGGER_TEMP_MEASURE_NOHOLD 0xF3
+#define TRIGGER_HUMD_MEASURE_NOHOLD 0xF5
+
+#define WRITE_USER_REG 0xE6
+#define READ_USER_REG 0xE7
+#define SOFT_RESET 0xFE
+
+#define USER_REGISTER_RESOLUTION_MASK 0x81
+#define USER_REGISTER_RESOLUTION_RH12_TEMP14 0x00
+#define USER_REGISTER_RESOLUTION_RH8_TEMP12 0x01
+#define USER_REGISTER_RESOLUTION_RH10_TEMP13 0x80
+#define USER_REGISTER_RESOLUTION_RH11_TEMP11 0x81
+#define USER_REGISTER_END_OF_BATTERY 0x40
+#define USER_REGISTER_HEATER_ENABLED 0x04
+#define USER_REGISTER_DISABLE_OTP_RELOAD 0x02
+
+#define MAX_WAIT 100
+#define DELAY_INTERVAL 10
+#define SHIFTED_DIVISOR 0x988000
+#define MAX_COUNTER (MAX_WAIT / DELAY_INTERVAL)
+
+using namespace ProMake;
+
+uint16_t SHT20::readValue(byte cmd)
 {
-    ProMakeCore.write1(SLAVE_ADDRESS, cmd);
-    uint32_t readValue = ProMakeCore.request24(SLAVE_ADDRESS, DELAY_INTERVAL, MAX_COUNTER);
+    write1(SLAVE_ADDRESS, cmd);
+    uint32_t readValue = request24(SLAVE_ADDRESS, DELAY_INTERVAL, MAX_COUNTER);
 
     if (readValue == ERROR_I2C_TIMEOUT)
     {
@@ -21,7 +48,7 @@ uint16_t ProMake_SHT20::readValue(byte cmd)
     return rawValue & 0xFFFC;
 }
 
-float ProMake_SHT20::readHumidity(void)
+float SHT20::readHumidity(void)
 {
     uint16_t rawHumidity = readValue(TRIGGER_HUMD_MEASURE_NOHOLD);
     if (rawHumidity == ERROR_I2C_TIMEOUT || rawHumidity == ERROR_BAD_CRC)
@@ -33,7 +60,7 @@ float ProMake_SHT20::readHumidity(void)
     return (rh);
 }
 
-float ProMake_SHT20::readTemperatureC(void)
+float SHT20::readTemperatureC(void)
 {
     uint16_t rawTemperature = readValue(TRIGGER_TEMP_MEASURE_NOHOLD);
     if (rawTemperature == ERROR_I2C_TIMEOUT || rawTemperature == ERROR_BAD_CRC)
@@ -45,7 +72,7 @@ float ProMake_SHT20::readTemperatureC(void)
     return (realTemperatureC);
 }
 
-float ProMake_SHT20::readTemperatureF(void)
+float SHT20::readTemperatureF(void)
 {
     uint16_t rawTemperature = readValue(TRIGGER_TEMP_MEASURE_NOHOLD);
     if (rawTemperature == ERROR_I2C_TIMEOUT || rawTemperature == ERROR_BAD_CRC)
@@ -58,7 +85,7 @@ float ProMake_SHT20::readTemperatureF(void)
     return (realTemperatureF);
 }
 
-float ProMake_SHT20::vpd()
+float SHT20::vpd()
 {
     float tempC = readTemperatureC();
     float RH = readHumidity();
@@ -70,7 +97,7 @@ float ProMake_SHT20::vpd()
     return vpd_kPa;
 }
 
-float ProMake_SHT20::dew_pointC()
+float SHT20::dew_pointC()
 {
     float tempC = readTemperatureC();
     float RH = readHumidity();
@@ -83,7 +110,7 @@ float ProMake_SHT20::dew_pointC()
     return dew_pointC;
 }
 
-float ProMake_SHT20::dew_pointF()
+float SHT20::dew_pointF()
 {
     float tempC = readTemperatureC();
     float RH = readHumidity();
@@ -97,7 +124,7 @@ float ProMake_SHT20::dew_pointF()
     return dew_pointF;
 }
 
-void ProMake_SHT20::setResolution(byte resolution)
+void SHT20::setResolution(byte resolution)
 {
     byte userRegister = readUserRegister();
     userRegister &= 0b01111110;
@@ -106,19 +133,19 @@ void ProMake_SHT20::setResolution(byte resolution)
     writeUserRegister(userRegister);
 }
 
-byte ProMake_SHT20::readUserRegister(void)
+byte SHT20::readUserRegister(void)
 {
     byte value = 0;
-    ProMakeCore.read8(SLAVE_ADDRESS, READ_USER_REG, value);
+    read8(SLAVE_ADDRESS, READ_USER_REG, value);
     return value;
 }
 
-void ProMake_SHT20::writeUserRegister(byte val)
+void SHT20::writeUserRegister(byte val)
 {
-    ProMakeCore.write8(SLAVE_ADDRESS, WRITE_USER_REG, val);
+    write8(SLAVE_ADDRESS, WRITE_USER_REG, val);
 }
 
-byte ProMake_SHT20::checkCRC(uint16_t message_from_sensor, uint8_t check_value_from_sensor)
+byte SHT20::checkCRC(uint16_t message_from_sensor, uint8_t check_value_from_sensor)
 {
     uint32_t remainder = (uint32_t)message_from_sensor << 8;
     remainder |= check_value_from_sensor;
@@ -134,7 +161,7 @@ byte ProMake_SHT20::checkCRC(uint16_t message_from_sensor, uint8_t check_value_f
     return (byte)remainder;
 }
 
-void ProMake_SHT20::showResult(const __FlashStringHelper *prefix, int val)
+void SHT20::showResult(const __FlashStringHelper *prefix, int val)
 {
     PROMAKE_LOGDEBUG0(prefix);
     if (val)
@@ -147,7 +174,7 @@ void ProMake_SHT20::showResult(const __FlashStringHelper *prefix, int val)
     }
 }
 
-void ProMake_SHT20::checkSHT20(void)
+void SHT20::checkSHT20(void)
 {
     byte reg = readUserRegister();
     showResult(F("End of battery: "), reg & USER_REGISTER_END_OF_BATTERY);

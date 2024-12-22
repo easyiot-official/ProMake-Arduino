@@ -1,8 +1,9 @@
 #include "ProMake_DHT11.h"
 #include <ProMake_debug.h>
 #include <ProMake_Core.h>
+using namespace ProMake;
 
-bool ProMake_DHT11::read(int pin)
+bool DHT11::read(int pin)
 {
 	uint8_t bits[5];
 	uint8_t cnt = 7;

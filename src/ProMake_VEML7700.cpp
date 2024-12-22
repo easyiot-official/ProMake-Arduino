@@ -1,11 +1,12 @@
 #include "ProMake_VEML7700.h"
 #include <ProMake_debug.h>
+using namespace ProMake;
 
-ProMake_VEML7700::ProMake_VEML7700()
+VEML7700::VEML7700()
 {
 }
 
-bool ProMake_VEML7700::begin()
+bool VEML7700::begin()
 {
   if (!ping(I2C_ADDRESS))
     return false;
@@ -29,7 +30,7 @@ bool ProMake_VEML7700::begin()
   return true;
 }
 
-bool ProMake_VEML7700::begin(uint8_t als_gain)
+bool VEML7700::begin(uint8_t als_gain)
 {
   if (!ping(I2C_ADDRESS))
     return false;
@@ -53,49 +54,21 @@ bool ProMake_VEML7700::begin(uint8_t als_gain)
   return true;
 }
 
-uint8_t ProMake_VEML7700::sendData(uint8_t command, uint32_t data)
+uint8_t VEML7700::sendData(uint8_t command, uint32_t data)
 {
-  ProMakeCore.write16(I2C_ADDRESS, command, data);
-  /*
-  Wire.beginTransmission(I2C_ADDRESS);
-  if (Wire.write(command) != 1){
-    return STATUS_ERROR;
-  }
-  if (Wire.write(uint8_t(data & 0xff)) != 1){
-    return STATUS_ERROR;
-  }
-  if (Wire.write(uint8_t(data >> 8)) != 1){
-    return STATUS_ERROR;
-  }
-  if (Wire.endTransmission()){
-    return STATUS_ERROR;
-  }
-  */
-  return STATUS_OK;
-}
-
-uint8_t ProMake_VEML7700::receiveData(uint8_t command, uint32_t &data)
-{
-  if (ProMakeCore.read16_LE(I2C_ADDRESS, command, false, (uint16_t&)data))
+  if (write16(I2C_ADDRESS, command, data))
     return STATUS_OK;
-  /*
-  Wire.beginTransmission(I2C_ADDRESS);
-  if (Wire.write(command) != 1){
-    return STATUS_ERROR;
-  }
-  if (Wire.endTransmission(false)){  // NB: don't send stop here
-    return STATUS_ERROR;
-  }
-  if (Wire.requestFrom(uint8_t(I2C_ADDRESS), uint8_t(2)) != 2){
-    return STATUS_ERROR;
-  }
-  data = Wire.read();
-  data |= uint32_t(Wire.read()) << 8;
-  */
   return STATUS_ERROR;
 }
 
-uint8_t ProMake_VEML7700::setGain(eAlsGain_t gain)
+uint8_t VEML7700::receiveData(uint8_t command, uint32_t &data)
+{
+  if (read16_LE(I2C_ADDRESS, command, false, (uint16_t &)data))
+    return STATUS_OK;
+  return STATUS_ERROR;
+}
+
+uint8_t VEML7700::setGain(eAlsGain_t gain)
 {
   uint32_t reg = ((register_cache[COMMAND_ALS_SM] & ~ALS_SM_MASK) |
                   ((uint32_t(gain) << ALS_SM_SHIFT) & ALS_SM_MASK));
@@ -103,14 +76,14 @@ uint8_t ProMake_VEML7700::setGain(eAlsGain_t gain)
   return sendData(COMMAND_ALS_SM, reg);
 }
 
-uint8_t ProMake_VEML7700::getGain(eAlsGain_t &gain)
+uint8_t VEML7700::getGain(eAlsGain_t &gain)
 {
   gain = eAlsGain_t(
       (register_cache[COMMAND_ALS_SM] & ALS_SM_MASK) >> ALS_SM_SHIFT);
   return STATUS_OK;
 }
 
-uint8_t ProMake_VEML7700::setIntegrationTime(eAlsItime_t itime)
+uint8_t VEML7700::setIntegrationTime(eAlsItime_t itime)
 {
   uint32_t reg = ((register_cache[COMMAND_ALS_IT] & ~ALS_IT_MASK) |
                   ((uint32_t(itime) << ALS_IT_SHIFT) & ALS_IT_MASK));
@@ -118,14 +91,14 @@ uint8_t ProMake_VEML7700::setIntegrationTime(eAlsItime_t itime)
   return sendData(COMMAND_ALS_IT, reg);
 }
 
-uint8_t ProMake_VEML7700::getIntegrationTime(eAlsItime_t &itime)
+uint8_t VEML7700::getIntegrationTime(eAlsItime_t &itime)
 {
   itime = eAlsItime_t(
       (register_cache[COMMAND_ALS_IT] & ALS_IT_MASK) >> ALS_IT_SHIFT);
   return STATUS_OK;
 }
 
-uint8_t ProMake_VEML7700::setPersistence(eAlsPersist_t persist)
+uint8_t VEML7700::setPersistence(eAlsPersist_t persist)
 {
   uint32_t reg = ((register_cache[COMMAND_ALS_PERS] & ~ALS_PERS_MASK) |
                   ((uint32_t(persist) << ALS_PERS_SHIFT) & ALS_PERS_MASK));
@@ -133,7 +106,7 @@ uint8_t ProMake_VEML7700::setPersistence(eAlsPersist_t persist)
   return sendData(COMMAND_ALS_PERS, reg);
 }
 
-uint8_t ProMake_VEML7700::setPowerSavingMode(eAlsPowerMode_t powerMode)
+uint8_t VEML7700::setPowerSavingMode(eAlsPowerMode_t powerMode)
 {
   uint32_t reg = ((register_cache[COMMAND_PSM] & ~PSM_MASK) |
                   ((uint32_t(powerMode) << PSM_SHIFT) & PSM_MASK));
@@ -141,7 +114,7 @@ uint8_t ProMake_VEML7700::setPowerSavingMode(eAlsPowerMode_t powerMode)
   return sendData(COMMAND_PSM, reg);
 }
 
-uint8_t ProMake_VEML7700::setPowerSaving(uint8_t enabled)
+uint8_t VEML7700::setPowerSaving(uint8_t enabled)
 {
   uint32_t reg = ((register_cache[COMMAND_PSM_EN] & ~PSM_EN_MASK) |
                   ((uint32_t(enabled) << PSM_EN_SHIFT) & PSM_EN_MASK));
@@ -149,7 +122,7 @@ uint8_t ProMake_VEML7700::setPowerSaving(uint8_t enabled)
   return sendData(COMMAND_PSM_EN, reg);
 }
 
-uint8_t ProMake_VEML7700::setInterrupts(uint8_t enabled)
+uint8_t VEML7700::setInterrupts(uint8_t enabled)
 {
   uint32_t reg = ((register_cache[COMMAND_ALS_INT_EN] & ~ALS_INT_EN_MASK) |
                   ((uint32_t(enabled) << ALS_INT_EN_SHIFT) &
@@ -158,7 +131,7 @@ uint8_t ProMake_VEML7700::setInterrupts(uint8_t enabled)
   return sendData(COMMAND_ALS_INT_EN, reg);
 }
 
-uint8_t ProMake_VEML7700::setPower(uint8_t on)
+uint8_t VEML7700::setPower(uint8_t on)
 {
   uint32_t reg = ((register_cache[COMMAND_ALS_SD] & ~ALS_SD_MASK) |
                   ((uint32_t(~on) << ALS_SD_SHIFT) & ALS_SD_MASK));
@@ -171,27 +144,27 @@ uint8_t ProMake_VEML7700::setPower(uint8_t on)
   return status;
 }
 
-uint8_t ProMake_VEML7700::setALSHighThreshold(uint32_t thresh)
+uint8_t VEML7700::setALSHighThreshold(uint32_t thresh)
 {
   return sendData(COMMAND_ALS_WH, thresh);
 }
 
-uint8_t ProMake_VEML7700::setALSLowThreshold(uint32_t thresh)
+uint8_t VEML7700::setALSLowThreshold(uint32_t thresh)
 {
   return sendData(COMMAND_ALS_WL, thresh);
 }
 
-uint8_t ProMake_VEML7700::getALS(uint32_t &als)
+uint8_t VEML7700::getALS(uint32_t &als)
 {
   return receiveData(COMMAND_ALS, als);
 }
 
-uint8_t ProMake_VEML7700::getWhite(uint32_t &white)
+uint8_t VEML7700::getWhite(uint32_t &white)
 {
   return receiveData(COMMAND_WHITE, white);
 }
 
-uint8_t ProMake_VEML7700::getHighThresholdEvent(uint8_t &event)
+uint8_t VEML7700::getHighThresholdEvent(uint8_t &event)
 {
   uint32_t reg;
   uint8_t status = receiveData(COMMAND_ALS_IF_H, reg);
@@ -200,7 +173,7 @@ uint8_t ProMake_VEML7700::getHighThresholdEvent(uint8_t &event)
   return status;
 }
 
-uint8_t ProMake_VEML7700::getLowThresholdEvent(uint8_t &event)
+uint8_t VEML7700::getLowThresholdEvent(uint8_t &event)
 {
   uint32_t reg;
   uint8_t status = receiveData(COMMAND_ALS_IF_L, reg);
@@ -209,7 +182,7 @@ uint8_t ProMake_VEML7700::getLowThresholdEvent(uint8_t &event)
   return status;
 }
 
-void ProMake_VEML7700::scaleLux(uint32_t raw_counts, float &lux)
+void VEML7700::scaleLux(uint32_t raw_counts, float &lux)
 {
   eAlsGain_t gain;
   eAlsItime_t itime;
@@ -301,7 +274,7 @@ void ProMake_VEML7700::scaleLux(uint32_t raw_counts, float &lux)
                                                     lux * 6.0135e-13f)));
 }
 
-uint8_t ProMake_VEML7700::getALSLux(float &lux)
+uint8_t VEML7700::getALSLux(float &lux)
 {
   uint32_t raw_counts = 0;
   uint8_t status = getALS(raw_counts);
@@ -309,7 +282,7 @@ uint8_t ProMake_VEML7700::getALSLux(float &lux)
   return status;
 }
 
-uint8_t ProMake_VEML7700::getWhiteLux(float &lux)
+uint8_t VEML7700::getWhiteLux(float &lux)
 {
   uint32_t raw_counts = 0;
   uint8_t status = getWhite(raw_counts);
@@ -317,11 +290,11 @@ uint8_t ProMake_VEML7700::getWhiteLux(float &lux)
   return status;
 }
 
-uint8_t ProMake_VEML7700::getAutoXLux(float &lux,
-                                      ProMake_VEML7700::getCountsFunction counts_func,
-                                      ProMake_VEML7700::eAlsGain_t &auto_gain,
-                                      ProMake_VEML7700::eAlsItime_t &auto_itime,
-                                      uint32_t &raw_counts)
+uint8_t VEML7700::getAutoXLux(float &lux,
+                              VEML7700::getCountsFunction counts_func,
+                              VEML7700::eAlsGain_t &auto_gain,
+                              VEML7700::eAlsItime_t &auto_itime,
+                              uint32_t &raw_counts)
 {
   eAlsGain_t gains[4] = {ALS_GAIN_d8,
                          ALS_GAIN_d4,
@@ -411,55 +384,55 @@ uint8_t ProMake_VEML7700::getAutoXLux(float &lux,
   return STATUS_OK;
 }
 
-uint8_t ProMake_VEML7700::getAutoALSLux(float &lux)
+uint8_t VEML7700::getAutoALSLux(float &lux)
 {
-  ProMake_VEML7700::eAlsGain_t auto_gain;
-  ProMake_VEML7700::eAlsItime_t auto_itime;
+  VEML7700::eAlsGain_t auto_gain;
+  VEML7700::eAlsItime_t auto_itime;
   uint32_t raw_counts;
   return getAutoXLux(lux,
-                     &ProMake_VEML7700::getALS,
+                     &VEML7700::getALS,
                      auto_gain,
                      auto_itime,
                      raw_counts);
 }
 
-uint8_t ProMake_VEML7700::getAutoWhiteLux(float &lux)
+uint8_t VEML7700::getAutoWhiteLux(float &lux)
 {
-  ProMake_VEML7700::eAlsGain_t auto_gain;
-  ProMake_VEML7700::eAlsItime_t auto_itime;
+  VEML7700::eAlsGain_t auto_gain;
+  VEML7700::eAlsItime_t auto_itime;
   uint32_t raw_counts;
   return getAutoXLux(lux,
-                     &ProMake_VEML7700::getWhite,
+                     &VEML7700::getWhite,
                      auto_gain,
                      auto_itime,
                      raw_counts);
 }
 
-uint8_t ProMake_VEML7700::getAutoALSLux(float &lux,
-                                        ProMake_VEML7700::eAlsGain_t &auto_gain,
-                                        ProMake_VEML7700::eAlsItime_t &auto_itime,
-                                        uint32_t &raw_counts)
+uint8_t VEML7700::getAutoALSLux(float &lux,
+                                VEML7700::eAlsGain_t &auto_gain,
+                                VEML7700::eAlsItime_t &auto_itime,
+                                uint32_t &raw_counts)
 {
   return getAutoXLux(lux,
-                     &ProMake_VEML7700::getALS,
+                     &VEML7700::getALS,
                      auto_gain,
                      auto_itime,
                      raw_counts);
 }
 
-uint8_t ProMake_VEML7700::getAutoWhiteLux(float &lux,
-                                          ProMake_VEML7700::eAlsGain_t &auto_gain,
-                                          ProMake_VEML7700::eAlsItime_t &auto_itime,
-                                          uint32_t &raw_counts)
+uint8_t VEML7700::getAutoWhiteLux(float &lux,
+                                  VEML7700::eAlsGain_t &auto_gain,
+                                  VEML7700::eAlsItime_t &auto_itime,
+                                  uint32_t &raw_counts)
 {
   return getAutoXLux(lux,
-                     &ProMake_VEML7700::getWhite,
+                     &VEML7700::getWhite,
                      auto_gain,
                      auto_itime,
                      raw_counts);
 }
 
-void ProMake_VEML7700::sampleDelay()
+void VEML7700::sampleDelay()
 {
   eAlsItime_t itime;
   getIntegrationTime(itime);

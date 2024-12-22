@@ -2,18 +2,22 @@
 #define PROMAKE_RELAY_2CH_H_INCLUDED
 
 #include <ProMake.h>
+namespace ProMake
+{
 
-class ProMake_Relay_2ch{
-public:
-	ProMake_Relay_2ch();
-	~ProMake_Relay_2ch();
-	void init(enuProMakeSlot slot);
-	void SetRelay1State(bool on);
-	void SetRelay2State(bool on);
-private:
-	int m_relay1_pin;
-	int m_relay2_pin;
+	class Relay_2ch
+	{
+	public:
+		Relay_2ch();
+		~Relay_2ch();
+		void init(enuSlot slot);
+		void SetRelay1State(bool on);
+		void SetRelay2State(bool on);
 
-};
+	private:
+		int m_relay1_pin;
+		int m_relay2_pin;
+	};
 
+}
 #endif
