@@ -102,7 +102,7 @@ namespace ProMake
             read_bytes(this->addr, Reg::INPUT_PORT_0, this->input.b, 2);
             return this->input.w;
         }
-        Level::Level read(const Port::Port port)
+        Level read(const Port port)
         {
             uint16_t v = read();
             return (v & (1 << port)) ? Level::H : Level::L;
@@ -113,7 +113,7 @@ namespace ProMake
             this->output.w = value;
             return write_impl();
         }
-        bool write(const Port::Port port, const Level::Level level)
+        bool write(const Port port, const Level level)
         {
             if (level == Level::H)
             {
@@ -131,7 +131,7 @@ namespace ProMake
             this->pol.w = value;
             return polarity_impl();
         }
-        bool polarity(const Port::Port port, const Polarity::Polarity pol)
+        bool polarity(const Port port, const Polarity pol)
         {
             if (pol == Polarity::INVERTED)
             {
@@ -150,7 +150,7 @@ namespace ProMake
             return direction_impl();
         }
 
-        bool direction(const Port::Port port, const Direction::Direction dir)
+        bool direction(const Port port, const Direction dir)
         {
             if (dir == Direction::IN)
             {

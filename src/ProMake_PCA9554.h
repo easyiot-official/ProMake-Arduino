@@ -6,10 +6,11 @@
 namespace ProMake
 {
     template <typename WireType = TwoWire>
-    class PCA95x4 : public CoreClass
+    class PCA95x4
     {
-        static constexpr uint8_t BASE_I2C_ADDR = 0x20;
-
+        static constexpr uint8_t BASE_I2C_ADDR = 0x38;
+        
+        WireType *wire{nullptr};
         uint8_t addr{BASE_I2C_ADDR};
         uint8_t input{0x00};
         uint8_t output{0xFF};
@@ -74,13 +75,13 @@ namespace ProMake
     public:
         void attach(WireType &wire, uint8_t i2c_addr = BASE_I2C_ADDR)
         {
-            CoreClass::attach(wire);
+            this->wire = &wire;
             this->addr = i2c_addr;
         }
 
         uint8_t read()
         {
-            read_byte(this->addr, Reg::INPUT_PORT_0, this->input, 1);
+            read_byte(this->addr, Reg::INPUT_PORT_0, this->input);
             return this->input;
         }
         Level read(const Port port)
@@ -152,20 +153,20 @@ namespace ProMake
     private:
         bool write_impl()
         {
-            return write8(this->addr, Reg::OUTPUT_PORT_0, this->output);
+            return write_byte(this->addr, Reg::OUTPUT_PORT_0, this->output);
         }
 
         bool polarity_impl()
         {
-            return write8(this->addr, Reg::POLARITY_INVERSION_PORT_0, this->pol);
+            return write_byte(this->addr, Reg::POLARITY_INVERSION_PORT_0, this->pol);
         }
 
         bool direction_impl()
         {
-            return write8(this->addr, Reg::CONFIGURATION_PORT_0, this->dir);
+            return write_byte(this->addr, Reg::CONFIGURATION_PORT_0, this->dir);
         }
 
-        int8_t read_byte(const uint8_t dev, const uint8_t reg, uint8_t *data)
+        int8_t read_byte(const uint8_t dev, const uint8_t reg, uint8_t &data)
         {
             wire->beginTransmission(dev);
             wire->write(reg);
@@ -173,7 +174,7 @@ namespace ProMake
             wire->requestFrom(dev, 1);
             int8_t count = 0;
             while (wire->available())
-                data[count++] = wire->read();
+                data = wire->read();
             return count;
         }
 
