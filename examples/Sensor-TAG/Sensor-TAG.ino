@@ -1,8 +1,8 @@
 #include "ProMake_SHT20.h"
 #include "ProMake_VEML7700.h"
 
-ProMake_SHT20 sht20;
-ProMake_VEML7700 als;
+ProMake::SHT20 sht20;
+ProMake::VEML7700 als;
 
 void setup()
 {
